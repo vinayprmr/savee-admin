@@ -71,7 +71,7 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700 mb-1">
-                Atelier Email
+                Admin Email
               </label>
               <input
                 type="email"
@@ -79,7 +79,7 @@ export default function LoginPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="admin@savee.in"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-950 focus:border-navy-950"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-900 focus:border-navy-900 transition-all"
               />
             </div>
 
@@ -91,10 +91,10 @@ export default function LoginPage() {
                 <button
                   type="button"
                   onClick={handleFillDemo}
-                  className="text-[11px] text-gold-600 hover:text-gold-700 font-medium inline-flex items-center gap-1"
+                  className="text-xs text-gold-600 hover:text-gold-700 font-semibold inline-flex items-center gap-1.5 transition-colors"
                 >
-                  <KeyRound className="w-3 h-3" />
-                  Fill Credentials
+                  <KeyRound className="w-3.5 h-3.5 text-gold-500" />
+                  <span>Fill Credentials</span>
                 </button>
               </div>
               <input
@@ -103,17 +103,17 @@ export default function LoginPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••••••"
-                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-navy-950 focus:border-navy-950"
+                className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-900 focus:border-navy-900 transition-all"
               />
             </div>
 
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 bg-navy-950 hover:bg-navy-900 text-white rounded-lg text-sm font-medium transition-colors shadow-md flex items-center justify-center gap-2 group disabled:opacity-50"
+              className="w-full py-3.5 bg-navy-900 hover:bg-navy-950 text-white rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 group border border-navy-800 disabled:opacity-50 mt-2"
             >
-              <span>{submitting ? "Authenticating..." : "Enter Atelier Portal"}</span>
-              <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+              <span>{submitting ? "Authenticating..." : "Enter Brand Portal"}</span>
+              <ArrowRight className="w-4 h-4 text-gold-400 group-hover:translate-x-1 transition-transform" />
             </button>
           </form>
 

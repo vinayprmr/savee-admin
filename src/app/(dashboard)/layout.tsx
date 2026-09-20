@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAdminAuthStore } from "../../state/admin-auth.store";
 import { Sidebar } from "../../components/layout/sidebar";
 import { Header } from "../../components/layout/header";
-import { Sparkles } from "lucide-react";
+import { Sparkles, ArrowRight } from "lucide-react";
 
 export default function DashboardLayout({
   children,
@@ -14,18 +15,26 @@ export default function DashboardLayout({
 }) {
   const router = useRouter();
   const { isAuthenticated, isLoading, initialize } = useAdminAuthStore();
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     initialize();
   }, [initialize]);
 
   useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      router.push("/login");
+    if (mounted && !isLoading && !isAuthenticated) {
+      router.replace("/login");
+      const timer = setTimeout(() => {
+        if (typeof window !== "undefined" && window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        }
+      }, 500);
+      return () => clearTimeout(timer);
     }
-  }, [isLoading, isAuthenticated, router]);
+  }, [mounted, isLoading, isAuthenticated, router]);
 
-  if (isLoading) {
+  if (isLoading || !mounted) {
     return (
       <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center text-slate-200">
         <div className="relative">
@@ -41,7 +50,21 @@ export default function DashboardLayout({
   }
 
   if (!isAuthenticated) {
-    return null;
+    return (
+      <div className="min-h-screen bg-navy-950 flex flex-col items-center justify-center text-slate-200 p-4">
+        <div className="text-center max-w-sm">
+          <div className="font-serif text-xl tracking-widest text-gold-300 mb-2">SAVEE OPERATIONS</div>
+          <p className="text-xs text-slate-400 mb-4">Authentication required to access operations.</p>
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-gold-500 hover:bg-gold-600 text-navy-950 font-medium text-xs rounded-lg transition-colors"
+          >
+            <span>Go to Staff Sign In</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+    );
   }
 
   return (

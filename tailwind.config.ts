@@ -15,18 +15,45 @@ const config: Config = {
         ring: "hsl(var(--ring))",
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
+        navy: {
+          50: "#F0F5FA",
+          100: "#E1ECF7",
+          200: "#BDD4EB",
+          300: "#8BB1D9",
+          400: "#5B8EC2",
+          500: "#336BA6",
+          600: "#255589",
+          700: "#1B426F",
+          800: "#12335A",
+          900: "#0B2545", // Savee Brand Navy
+          950: "#051329", // Savee Midnight Dark
+          DEFAULT: "#0B2545",
+        },
+        gold: {
+          50: "#FDF9F2",
+          100: "#F9F1E2",
+          200: "#F3E4C6",
+          300: "#EAD2A8",
+          400: "#E0C08D",
+          500: "#D6AE72", // Official Savee Gold
+          600: "#B58832",
+          700: "#8E6924",
+          800: "#6B4E1B",
+          900: "#4B3612",
+          DEFAULT: "#D6AE72",
+        },
         savee: {
           navy: {
             DEFAULT: "#0B2545",
-            dark: "#061528",
-            light: "#163B66",
-            subtle: "#F0F4F8",
+            dark: "#051329",
+            light: "#1B426F",
+            subtle: "#F0F5FA",
           },
           gold: {
-            DEFAULT: "#C9A96A",
-            dark: "#A68645",
-            light: "#DFCA9D",
-            subtle: "#FAF6EE",
+            DEFAULT: "#D6AE72",
+            dark: "#8E6924",
+            light: "#EAD2A8",
+            subtle: "#FDF9F2",
             shimmer: "#E8D8B5",
           },
           ivory: {
