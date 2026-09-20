@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useAdminAuthStore } from "../../state/admin-auth.store";
+import { SaveeHorizontalLogo } from "../brand/SaveeLogo";
 
 const NAV_ITEMS = [
   {
@@ -78,13 +79,10 @@ export function Sidebar() {
     <aside className="w-64 bg-navy-950 text-slate-200 flex flex-col flex-shrink-0 border-r border-navy-900 select-none">
       {/* Brand Header */}
       <div className="p-6 border-b border-navy-900/80">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-5 h-5 text-gold-500" />
-          <span className="font-serif text-2xl font-bold tracking-widest text-gold-400">
-            SAVEE
-          </span>
-        </div>
-        <div className="text-[10px] uppercase font-semibold tracking-widest text-slate-400 mt-1">
+        <Link href="/" className="block">
+          <SaveeHorizontalLogo variant="white" className="h-7 w-auto" />
+        </Link>
+        <div className="text-[10px] uppercase font-semibold tracking-widest text-slate-400 mt-2">
           Brand Operations Portal
         </div>
       </div>

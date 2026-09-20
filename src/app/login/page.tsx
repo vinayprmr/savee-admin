@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Sparkles, Shield, ArrowRight, AlertCircle, KeyRound } from "lucide-react";
 import { useAdminAuthStore } from "../../state/admin-auth.store";
+import { SaveeVerticalLogo } from "../../components/brand/SaveeLogo";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -42,14 +43,9 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 relative z-10">
         {/* Atelier Monogram Header */}
-        <div className="bg-navy-900 p-8 text-center border-b border-navy-800">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-gold-500/15 border border-gold-500/30 text-gold-400 mb-3">
-            <Sparkles className="w-6 h-6" />
-          </div>
-          <h1 className="font-serif text-3xl font-bold tracking-widest text-gold-400">
-            SAVEE
-          </h1>
-          <p className="text-xs uppercase tracking-widest text-slate-300 mt-1 font-medium">
+        <div className="bg-navy-900 p-8 text-center border-b border-navy-800 flex flex-col items-center">
+          <SaveeVerticalLogo variant="white" className="h-16 w-auto mb-1" />
+          <p className="text-xs uppercase tracking-widest text-slate-300 mt-2 font-medium">
             Atelier & Brand Operations Portal
           </p>
         </div>
