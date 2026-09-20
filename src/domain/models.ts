@@ -190,3 +190,59 @@ export interface PaginatedAdminCustomers {
   limit: number;
   totalPages: number;
 }
+
+export interface StorefrontSettings {
+  id: string;
+  announcement_text: string;
+  announcement_active: boolean;
+  enable_concierge: boolean;
+
+  hero_headline: string;
+  hero_subheadline: string;
+  hero_primary_cta_text: string;
+  hero_primary_cta_link: string;
+  hero_secondary_cta_text: string;
+  hero_secondary_cta_link: string;
+
+  hero_badge_1: string;
+  hero_badge_2: string;
+  hero_badge_3: string;
+
+  manifesto_quote: string;
+  trending_searches: string[];
+  featured_collection_slug: string;
+  updated_at?: string;
+}
+
+export interface UpdateStorefrontSettingsPayload {
+  announcement_text?: string;
+  announcement_active?: boolean;
+  enable_concierge?: boolean;
+
+  hero_headline?: string;
+  hero_subheadline?: string;
+  hero_primary_cta_text?: string;
+  hero_primary_cta_link?: string;
+  hero_secondary_cta_text?: string;
+  hero_secondary_cta_link?: string;
+
+  hero_badge_1?: string;
+  hero_badge_2?: string;
+  hero_badge_3?: string;
+
+  manifesto_quote?: string;
+  trending_searches?: string[];
+  featured_collection_slug?: string;
+}
+
+export interface NewsletterSubscriberItem {
+  id: string;
+  email: string;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface PaginatedSubscribers {
+  items: NewsletterSubscriberItem[];
+  total: number;
+}

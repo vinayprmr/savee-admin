@@ -10,6 +10,9 @@ import {
   CreateCouponPayload,
   AdminReviewItem,
   PaginatedAdminCustomers,
+  StorefrontSettings,
+  UpdateStorefrontSettingsPayload,
+  PaginatedSubscribers,
 } from "../domain/models";
 import { adminFetch } from "../lib/api-client";
 
@@ -149,5 +152,32 @@ export const AdminService = {
 
     const qs = query.toString();
     return adminFetch<PaginatedAdminCustomers>(`/admin/customers${qs ? `?${qs}` : ""}`);
+  },
+
+  // Storefront CMS & Settings
+  async getStorefrontSettings(): Promise<StorefrontSettings> {
+    return adminFetch<StorefrontSettings>("/admin/storefront/settings");
+  },
+
+  async updateStorefrontSettings(
+    payload: UpdateStorefrontSettingsPayload
+  ): Promise<StorefrontSettings> {
+    return adminFetch<StorefrontSettings>("/admin/storefront/settings", {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // Newsletter Subscribers
+  async listSubscribers(params: {
+    page?: number;
+    limit?: number;
+  } = {}): Promise<PaginatedSubscribers> {
+    const query = new URLSearchParams();
+    if (params.page) query.append("page", params.page.toString());
+    if (params.limit) query.append("limit", params.limit.toString());
+
+    const qs = query.toString();
+    return adminFetch<PaginatedSubscribers>(`/admin/subscribers${qs ? `?${qs}` : ""}`);
   },
 };

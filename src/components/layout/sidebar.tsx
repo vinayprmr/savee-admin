@@ -10,6 +10,8 @@ import {
   TicketPercent,
   Star,
   Users,
+  SlidersHorizontal,
+  Mail,
   LogOut,
   Sparkles,
   ExternalLink,
@@ -19,7 +21,7 @@ import { useAdminAuthStore } from "../../state/admin-auth.store";
 
 const NAV_ITEMS = [
   {
-    label: "Atelier Overview",
+    label: "Dashboard",
     href: "/",
     icon: LayoutDashboard,
     badge: null,
@@ -54,6 +56,18 @@ const NAV_ITEMS = [
     icon: Users,
     badge: null,
   },
+  {
+    label: "Storefront & CMS",
+    href: "/storefront",
+    icon: SlidersHorizontal,
+    badge: "Live",
+  },
+  {
+    label: "Newsletter Subscribers",
+    href: "/subscribers",
+    icon: Mail,
+    badge: null,
+  },
 ];
 
 export function Sidebar() {
@@ -71,7 +85,7 @@ export function Sidebar() {
           </span>
         </div>
         <div className="text-[10px] uppercase font-semibold tracking-widest text-slate-400 mt-1">
-          Atelier Operations Portal
+          Brand Operations Portal
         </div>
       </div>
 
@@ -142,7 +156,7 @@ export function Sidebar() {
         <div className="pt-2 border-t border-navy-900 flex items-center justify-between">
           <div className="min-w-0 pr-2">
             <div className="text-xs font-semibold text-slate-200 truncate">
-              {admin?.name || "Atelier Staff"}
+              {admin?.name || "Operations Staff"}
             </div>
             <div className="text-[10px] text-slate-400 truncate">
               {admin?.email || "admin@savee.in"}
@@ -150,7 +164,7 @@ export function Sidebar() {
           </div>
           <button
             onClick={logout}
-            title="Sign out of Atelier"
+            title="Sign out of Savee"
             className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-navy-900 rounded transition-colors"
           >
             <LogOut className="w-4 h-4" />
