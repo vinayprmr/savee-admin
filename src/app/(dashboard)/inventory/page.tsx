@@ -13,26 +13,42 @@ import {
   ChevronLeft,
   ChevronRight,
   Sparkles,
+  Plus,
+  Trash2,
+  Settings2,
+  Edit3,
 } from "lucide-react";
-import { AdminProductItem, AdminVariantItem, PaginatedAdminProducts } from "../../../domain/models";
+import {
+  AdminProductItem,
+  AdminVariantItem,
+  PaginatedAdminProducts,
+  AdminCategoryItem,
+} from "../../../domain/models";
 import { AdminService } from "../../../services/admin.service";
 import { formatINR } from "../../../lib/utils";
 import { StockStatusBadge } from "../../../components/ui/status-badge";
+import { ManageCategoriesModal } from "../../../components/inventory/ManageCategoriesModal";
+import { AddGarmentDrawer } from "../../../components/inventory/AddGarmentDrawer";
+import { EditGarmentDrawer } from "../../../components/inventory/EditGarmentDrawer";
 
-const CATEGORIES = [
-  { label: "All Garments", value: "ALL" },
-  { label: "Sarees", value: "sarees" },
-  { label: "Lehengas", value: "lehengas" },
-  { label: "Kurtas & Sets", value: "kurtas-sets" },
-  { label: "Anarkalis", value: "anarkalis" },
-  { label: "Gowns", value: "gowns" },
-  { label: "Co-ord Sets", value: "coord-sets" },
-  { label: "Dresses", value: "dresses" },
-  { label: "Jewelry", value: "jewelry" },
+const FALLBACK_CATEGORIES = [
+  { id: "cat-sarees", name: "Sarees", slug: "sarees", itemCount: 28, displayOrder: 1, isFeatured: true, isActive: true, subcategories: [] },
+  { id: "cat-lehengas", name: "Lehengas", slug: "lehengas", itemCount: 20, displayOrder: 2, isFeatured: true, isActive: true, subcategories: [] },
+  { id: "cat-kurtas-sets", name: "Kurtas & Sets", slug: "kurtas-sets", itemCount: 18, displayOrder: 3, isFeatured: true, isActive: true, subcategories: [] },
+  { id: "cat-anarkalis", name: "Anarkalis", slug: "anarkalis", itemCount: 14, displayOrder: 4, isFeatured: false, isActive: true, subcategories: [] },
+  { id: "cat-gowns", name: "Gowns", slug: "gowns", itemCount: 12, displayOrder: 5, isFeatured: false, isActive: true, subcategories: [] },
+  { id: "cat-coord-sets", name: "Co-ord Sets", slug: "coord-sets", itemCount: 12, displayOrder: 6, isFeatured: false, isActive: true, subcategories: [] },
+  { id: "cat-dresses", name: "Dresses", slug: "dresses", itemCount: 12, displayOrder: 7, isFeatured: false, isActive: true, subcategories: [] },
+  { id: "cat-jewelry", name: "Jewelry", slug: "jewelry", itemCount: 10, displayOrder: 8, isFeatured: false, isActive: true, subcategories: [] },
 ];
 
 export default function InventoryPage() {
   const [products, setProducts] = useState<AdminProductItem[]>([]);
+  const [categories, setCategories] = useState<AdminCategoryItem[]>(FALLBACK_CATEGORIES);
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isAddGarmentOpen, setIsAddGarmentOpen] = useState(false);
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -50,6 +66,17 @@ export default function InventoryPage() {
   const [stockBuffer, setStockBuffer] = useState<Record<string, number>>({});
   const [savingVariantId, setSavingVariantId] = useState<string | null>(null);
   const [savedVariantId, setSavedVariantId] = useState<string | null>(null);
+
+  const fetchCategories = useCallback(async () => {
+    try {
+      const cats = await AdminService.listCategories();
+      if (cats && cats.length > 0) {
+        setCategories(cats);
+      }
+    } catch (err) {
+      console.warn("Could not load dynamic categories, using cached presets", err);
+    }
+  }, []);
 
   const fetchProducts = useCallback(async () => {
     try {
@@ -82,8 +109,29 @@ export default function InventoryPage() {
   }, [selectedCategory, stockFilter, searchQuery, page, limit]);
 
   useEffect(() => {
+    fetchCategories();
+  }, [fetchCategories]);
+
+  useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
+
+  const handleDeleteProduct = async (prod: AdminProductItem) => {
+    if (
+      !window.confirm(
+        `Are you sure you want to remove "${prod.title}" from the atelier catalog?`
+      )
+    ) {
+      return;
+    }
+    try {
+      await AdminService.deleteProduct(prod.id);
+      fetchProducts();
+      fetchCategories();
+    } catch (err: any) {
+      alert(err.message || "Failed to delete garment");
+    }
+  };
 
   const toggleExpand = (productId: string) => {
     setExpandedIds((prev) => {
@@ -147,24 +195,60 @@ export default function InventoryPage() {
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Search and Category Filter Toolbar */}
       <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-xs space-y-4">
-        {/* Category Tabs */}
-        <div className="flex items-center gap-1 overflow-x-auto pb-1 border-b border-slate-100">
-          {CATEGORIES.map((cat) => (
+        {/* Category Tabs & Manager Trigger */}
+        <div className="flex items-center justify-between gap-3 overflow-x-auto pb-2 border-b border-slate-100">
+          <div className="flex items-center gap-1.5 overflow-x-auto py-0.5">
             <button
-              key={cat.value}
               onClick={() => {
-                setSelectedCategory(cat.value);
+                setSelectedCategory("ALL");
                 setPage(1);
               }}
               className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors ${
-                selectedCategory === cat.value
+                selectedCategory === "ALL"
                   ? "bg-navy-950 text-white shadow-xs"
                   : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
               }`}
             >
-              {cat.label}
+              All Garments
             </button>
-          ))}
+            {categories
+              .filter((c) => c.isActive)
+              .map((cat) => (
+                <button
+                  key={cat.id}
+                  onClick={() => {
+                    setSelectedCategory(cat.slug);
+                    setPage(1);
+                  }}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium whitespace-nowrap transition-colors flex items-center gap-1.5 ${
+                    selectedCategory === cat.slug
+                      ? "bg-navy-950 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900 hover:bg-slate-100"
+                  }`}
+                >
+                  <span>{cat.name}</span>
+                  <span
+                    className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                      selectedCategory === cat.slug
+                        ? "bg-white/20 text-white"
+                        : "bg-slate-200/70 text-slate-600"
+                    }`}
+                  >
+                    {cat.itemCount}
+                  </span>
+                </button>
+              ))}
+          </div>
+
+          <button
+            type="button"
+            onClick={() => setIsCategoryModalOpen(true)}
+            className="px-2.5 py-1.5 rounded-lg text-xs font-medium border border-slate-200 hover:border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-700 transition-colors flex items-center gap-1.5 shrink-0 whitespace-nowrap"
+            title="Configure Garment Categories"
+          >
+            <Settings2 className="w-3.5 h-3.5 text-gold-600" />
+            <span>Manage Categories</span>
+          </button>
         </div>
 
         {/* Filter controls & Search */}
@@ -200,7 +284,7 @@ export default function InventoryPage() {
             </select>
           </div>
 
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+          <div className="flex items-center gap-2.5 w-full sm:w-auto justify-end">
             <span className="text-xs text-slate-500">
               Showing <strong className="text-slate-800">{products.length}</strong> of {total} garments
             </span>
@@ -210,6 +294,14 @@ export default function InventoryPage() {
               title="Refresh Catalog"
             >
               <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin text-navy-900" : ""}`} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setIsAddGarmentOpen(true)}
+              className="px-3.5 py-2 rounded-lg bg-navy-950 text-white hover:bg-navy-900 border border-gold-500/30 text-xs font-semibold flex items-center gap-1.5 shadow-xs transition-all shrink-0"
+            >
+              <Plus className="w-3.5 h-3.5 text-gold-400" />
+              <span>Add Garment</span>
             </button>
           </div>
         </div>
@@ -241,6 +333,7 @@ export default function InventoryPage() {
                   <th className="py-3 px-4">Atelier Price</th>
                   <th className="py-3 px-4">Total Stock</th>
                   <th className="py-3 px-4 text-right">Status</th>
+                  <th className="py-3 px-4 text-center w-12">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 text-xs text-slate-700">
@@ -320,12 +413,33 @@ export default function InventoryPage() {
                             {prod.inStock ? "Available" : "Stock Depleted"}
                           </span>
                         </td>
+
+                        <td className="py-3.5 px-4 text-center" onClick={(e) => e.stopPropagation()}>
+                          <div className="flex items-center justify-center gap-1">
+                            <button
+                              type="button"
+                              onClick={() => setEditingProductId(prod.id)}
+                              className="p-1.5 text-slate-400 hover:text-navy-950 hover:bg-slate-100 rounded transition-colors"
+                              title={`Edit ${prod.title}`}
+                            >
+                              <Edit3 className="w-3.5 h-3.5 text-navy-900" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteProduct(prod)}
+                              className="p-1.5 text-slate-300 hover:text-rose-600 hover:bg-rose-50 rounded transition-colors"
+                              title={`Delete ${prod.title}`}
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </td>
                       </tr>
 
                       {/* Expandable Sizing & Quick Stock Row */}
                       {isExpanded && (
                         <tr className="bg-slate-50/90 border-y border-slate-200">
-                          <td colSpan={7} className="p-4 pl-14">
+                          <td colSpan={8} className="p-4 pl-14">
                             <div className="bg-white rounded-lg border border-slate-200 p-4 shadow-2xs">
                               <div className="flex items-center justify-between mb-3">
                                 <div className="text-xs font-semibold text-navy-950 flex items-center gap-1.5">
@@ -469,6 +583,41 @@ export default function InventoryPage() {
           </div>
         </div>
       </div>
+
+      {/* Categories Management Modal */}
+      <ManageCategoriesModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categories={categories}
+        onCategoryChanged={() => {
+          fetchCategories();
+          fetchProducts();
+        }}
+      />
+
+      {/* Add New Garment Drawer */}
+      <AddGarmentDrawer
+        isOpen={isAddGarmentOpen}
+        onClose={() => setIsAddGarmentOpen(false)}
+        categories={categories}
+        selectedCategorySlug={selectedCategory}
+        onGarmentCreated={() => {
+          fetchProducts();
+          fetchCategories();
+        }}
+      />
+
+      {/* Edit Garment Drawer */}
+      <EditGarmentDrawer
+        productId={editingProductId}
+        isOpen={Boolean(editingProductId)}
+        onClose={() => setEditingProductId(null)}
+        categories={categories}
+        onGarmentUpdated={() => {
+          fetchProducts();
+          fetchCategories();
+        }}
+      />
     </div>
   );
 }

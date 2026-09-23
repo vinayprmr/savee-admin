@@ -246,3 +246,123 @@ export interface PaginatedSubscribers {
   items: NewsletterSubscriberItem[];
   total: number;
 }
+
+export interface SubCategoryItem {
+  name: string;
+  slug: string;
+}
+
+export interface AdminCategoryItem {
+  id: string;
+  name: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  itemCount: number;
+  displayOrder: number;
+  isFeatured: boolean;
+  isActive: boolean;
+  subcategories: SubCategoryItem[];
+}
+
+export interface CreateCategoryPayload {
+  name: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
+  displayOrder?: number;
+  isFeatured?: boolean;
+  subcategories?: SubCategoryItem[];
+}
+
+export interface UpdateCategoryPayload {
+  name?: string;
+  slug?: string;
+  description?: string;
+  imageUrl?: string;
+  displayOrder?: number;
+  isFeatured?: boolean;
+  isActive?: boolean;
+  subcategories?: SubCategoryItem[];
+}
+
+export interface CreateVariantPayload {
+  size: string;
+  color?: string;
+  colorCode?: string;
+  sku?: string;
+  stockQuantity: number;
+}
+
+export interface CreateImagePayload {
+  url: string;
+  altText?: string;
+  isPrimary?: boolean;
+}
+
+export interface CreateProductPayload {
+  title: string;
+  slug?: string;
+  subtitle?: string;
+  categoryId: string;
+  subCategory?: string;
+  description: string;
+  sku?: string;
+  price: number;
+  originalPrice?: number;
+  fabric?: string;
+  craft?: string;
+  occasion?: string;
+  fit?: string;
+  washCare?: string[];
+  details?: { label: string; value: string }[];
+  isBestseller?: boolean;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  images?: CreateImagePayload[];
+  variants?: CreateVariantPayload[];
+}
+
+export interface AdminImageItem {
+  id: number;
+  url: string;
+  altText?: string;
+  isPrimary: boolean;
+}
+
+export interface AdminProductDetail extends AdminProductItem {
+  categoryId: string;
+  subCategory?: string;
+  description: string;
+  fabric: string;
+  craft: string;
+  occasion: string;
+  fit?: string;
+  washCare?: string[];
+  isNewArrival?: boolean;
+  images: AdminImageItem[];
+}
+
+export interface UpdateProductPayload {
+  title?: string;
+  slug?: string;
+  subtitle?: string;
+  categoryId?: string;
+  subCategory?: string;
+  description?: string;
+  sku?: string;
+  price?: number;
+  originalPrice?: number;
+  fabric?: string;
+  craft?: string;
+  occasion?: string;
+  fit?: string;
+  washCare?: string[];
+  details?: { label: string; value: string }[];
+  isBestseller?: boolean;
+  isFeatured?: boolean;
+  isNewArrival?: boolean;
+  isActive?: boolean;
+  images?: CreateImagePayload[];
+  variants?: CreateVariantPayload[];
+}

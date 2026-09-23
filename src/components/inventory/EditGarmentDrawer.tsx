@@ -1,0 +1,724 @@
+"use client";
+
+import React, { useState, useEffect } from "react";
+import {
+  X,
+  Sparkles,
+  Plus,
+  Trash2,
+  Image as ImageIcon,
+  Check,
+  AlertCircle,
+  RefreshCw,
+  Tag,
+  Layers,
+  Save,
+  Edit3,
+} from "lucide-react";
+import {
+  AdminCategoryItem,
+  UpdateProductPayload,
+  CreateVariantPayload,
+  CreateImagePayload,
+} from "../../domain/models";
+import { AdminService } from "../../services/admin.service";
+import { formatINR } from "../../lib/utils";
+
+interface EditGarmentDrawerProps {
+  productId: string | null;
+  isOpen: boolean;
+  onClose: () => void;
+  categories: AdminCategoryItem[];
+  onGarmentUpdated: () => void;
+}
+
+export function EditGarmentDrawer({
+  productId,
+  isOpen,
+  onClose,
+  categories,
+  onGarmentUpdated,
+}: EditGarmentDrawerProps) {
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  // Form State
+  const [title, setTitle] = useState("");
+  const [categoryId, setCategoryId] = useState("");
+  const [subCategory, setSubCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [fabric, setFabric] = useState("");
+  const [craft, setCraft] = useState("");
+  const [occasion, setOccasion] = useState("");
+  const [fit, setFit] = useState("");
+
+  // Pricing
+  const [price, setPrice] = useState<number>(0);
+  const [originalPrice, setOriginalPrice] = useState<number>(0);
+  const [customSku, setCustomSku] = useState("");
+
+  // Badges & Visibility
+  const [isNewArrival, setIsNewArrival] = useState(false);
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isBestseller, setIsBestseller] = useState(false);
+  const [isActive, setIsActive] = useState(true);
+
+  // Images list
+  const [images, setImages] = useState<CreateImagePayload[]>([]);
+  const [newImageUrl, setNewImageUrl] = useState("");
+
+  // Variants list
+  const [variants, setVariants] = useState<CreateVariantPayload[]>([]);
+  const [customSizeInput, setCustomSizeInput] = useState("");
+
+  // Load existing garment details on open
+  useEffect(() => {
+    if (!isOpen || !productId) return;
+
+    let isMounted = true;
+    async function loadGarment() {
+      try {
+        setLoading(true);
+        setError(null);
+        const prod = await AdminService.getProduct(productId!);
+        if (!isMounted) return;
+
+        setTitle(prod.title || "");
+        setCategoryId(prod.categoryId || "");
+        setSubCategory(prod.subCategory || "");
+        setDescription(prod.description || "");
+        setFabric(prod.fabric || "");
+        setCraft(prod.craft || "");
+        setOccasion(prod.occasion || "");
+        setFit(prod.fit || "");
+        setCustomSku(prod.sku || "");
+
+        setPrice(prod.price || 0);
+        setOriginalPrice(prod.originalPrice || prod.price || 0);
+
+        setIsNewArrival(Boolean(prod.isNewArrival));
+        setIsFeatured(Boolean(prod.isFeatured));
+        setIsBestseller(Boolean(prod.isBestseller));
+        setIsActive(Boolean(prod.isActive));
+
+        if (prod.images && prod.images.length > 0) {
+          setImages(
+            prod.images.map((img) => ({
+              url: img.url,
+              altText: img.altText || prod.title,
+              isPrimary: Boolean(img.isPrimary),
+            }))
+          );
+        } else if (prod.image) {
+          setImages([
+            {
+              url: prod.image,
+              altText: prod.title,
+              isPrimary: true,
+            },
+          ]);
+        } else {
+          setImages([]);
+        }
+
+        if (prod.variants && prod.variants.length > 0) {
+          setVariants(
+            prod.variants.map((v) => ({
+              size: v.size,
+              color: v.color,
+              sku: v.sku,
+              stockQuantity: v.stockQuantity,
+            }))
+          );
+        } else {
+          setVariants([{ size: "Free Size", stockQuantity: 10 }]);
+        }
+      } catch (err: any) {
+        if (isMounted) {
+          setError(err.message || "Failed to load garment specifications");
+        }
+      } finally {
+        if (isMounted) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadGarment();
+    return () => {
+      isMounted = false;
+    };
+  }, [isOpen, productId]);
+
+  const handleAddImage = () => {
+    const trimmed = newImageUrl.trim();
+    if (!trimmed) return;
+    setImages((prev) => [
+      ...prev,
+      {
+        url: trimmed,
+        altText: title || "Atelier Silhouette",
+        isPrimary: prev.length === 0,
+      },
+    ]);
+    setNewImageUrl("");
+  };
+
+  const handleSetPrimaryImage = (index: number) => {
+    setImages((prev) =>
+      prev.map((img, i) => ({
+        ...img,
+        isPrimary: i === index,
+      }))
+    );
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImages((prev) => {
+      const next = prev.filter((_, i) => i !== index);
+      if (next.length > 0 && !next.some((img) => img.isPrimary)) {
+        next[0].isPrimary = true;
+      }
+      return next;
+    });
+  };
+
+  const handleStockChange = (index: number, val: number) => {
+    setVariants((prev) =>
+      prev.map((v, i) => (i === index ? { ...v, stockQuantity: Math.max(0, val) } : v))
+    );
+  };
+
+  const handleAddCustomSize = () => {
+    const clean = customSizeInput.trim().toUpperCase();
+    if (!clean) return;
+    if (variants.some((v) => v.size.toUpperCase() === clean)) {
+      alert("This size is already configured.");
+      return;
+    }
+    setVariants((prev) => [...prev, { size: clean, stockQuantity: 10 }]);
+    setCustomSizeInput("");
+  };
+
+  const handleRemoveVariant = (index: number) => {
+    if (variants.length <= 1) {
+      alert("At least one sizing variant is required.");
+      return;
+    }
+    setVariants((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const totalCalculatedStock = variants.reduce((acc, v) => acc + v.stockQuantity, 0);
+  const calculatedDiscount =
+    originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    if (!productId) return;
+    if (!title.trim()) {
+      setError("Please enter a garment style title.");
+      return;
+    }
+    if (!categoryId) {
+      setError("Please select a valid category.");
+      return;
+    }
+    if (price <= 0) {
+      setError("Atelier price must be greater than zero.");
+      return;
+    }
+    if (variants.length === 0) {
+      setError("At least one size variant is required.");
+      return;
+    }
+
+    try {
+      setSubmitting(true);
+      const payload: UpdateProductPayload = {
+        title: title.trim(),
+        categoryId,
+        subCategory: subCategory.trim() || undefined,
+        description: description.trim(),
+        price,
+        originalPrice: originalPrice >= price ? originalPrice : price,
+        sku: customSku.trim() || undefined,
+        fabric: fabric.trim() || undefined,
+        craft: craft.trim() || undefined,
+        occasion: occasion.trim() || undefined,
+        fit: fit.trim() || undefined,
+        isNewArrival,
+        isFeatured,
+        isBestseller,
+        isActive,
+        images,
+        variants,
+      };
+
+      await AdminService.updateProduct(productId, payload);
+      onGarmentUpdated();
+      onClose();
+    } catch (err: any) {
+      setError(err.message || "Failed to update garment");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 overflow-hidden">
+      {/* Backdrop */}
+      <div
+        className="absolute inset-0 bg-navy-950/60 backdrop-blur-xs transition-opacity"
+        onClick={onClose}
+      />
+
+      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+        <div className="w-screen max-w-2xl bg-white shadow-2xl border-l border-slate-200 flex flex-col animate-in slide-in-from-right duration-250">
+          {/* Header */}
+          <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-navy-950 text-gold-400 flex items-center justify-center font-serif shadow-xs">
+                <Edit3 className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base font-serif font-bold text-navy-950">
+                  Modify Atelier Garment
+                </h2>
+                <p className="text-xs text-slate-500 mt-0.5">
+                  Update style metadata, valuation, imagery, and sizing inventory.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          {/* Form / Loading State */}
+          {loading ? (
+            <div className="flex-1 flex flex-col items-center justify-center p-12 text-slate-400 space-y-3">
+              <RefreshCw className="w-8 h-8 animate-spin text-gold-500" />
+              <p className="text-xs font-medium text-slate-600">
+                Loading garment specifications...
+              </p>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-6 space-y-6">
+              {error && (
+                <div className="p-3.5 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{error}</span>
+                </div>
+              )}
+
+              {/* Section 1: Garment Identity */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <Layers className="w-4 h-4 text-gold-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    1. Garment Identity & Classification
+                  </h3>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Garment Style Title *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    placeholder="e.g. Varanasi Gold Zari Tissue Heritage Saree"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-3.5 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Atelier Category *
+                    </label>
+                    <select
+                      value={categoryId}
+                      onChange={(e) => setCategoryId(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                    >
+                      {categories.map((cat) => (
+                        <option key={cat.id} value={cat.id}>
+                          {cat.name} ({cat.itemCount} styles)
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Subcategory / Weave
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Katan Silk, Organza, Linen"
+                      value={subCategory}
+                      onChange={(e) => setSubCategory(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Fabric
+                    </label>
+                    <input
+                      type="text"
+                      value={fabric}
+                      onChange={(e) => setFabric(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Artisanal Craft
+                    </label>
+                    <input
+                      type="text"
+                      value={craft}
+                      onChange={(e) => setCraft(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Occasion
+                    </label>
+                    <input
+                      type="text"
+                      value={occasion}
+                      onChange={(e) => setOccasion(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                    Atelier Narrative / Description
+                  </label>
+                  <textarea
+                    rows={3}
+                    placeholder="Describe the silhouette, handloom provenance, gold zari detailing, and drape experience..."
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                  />
+                </div>
+              </div>
+
+              {/* Section 2: Pricing & Codes */}
+              <div className="space-y-4">
+                <div className="flex items-center gap-2 pb-2 border-b border-slate-100">
+                  <Tag className="w-4 h-4 text-gold-500" />
+                  <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                    2. Pricing & Valuation
+                  </h3>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      Selling Price (₹) *
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={100}
+                      value={price}
+                      onChange={(e) => setPrice(parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white font-semibold text-slate-900"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      MRP Valuation (₹)
+                    </label>
+                    <input
+                      type="number"
+                      min={price}
+                      value={originalPrice}
+                      onChange={(e) => setOriginalPrice(parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white text-slate-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
+                      SKU Identifier Code
+                    </label>
+                    <input
+                      type="text"
+                      value={customSku}
+                      onChange={(e) => setCustomSku(e.target.value)}
+                      className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white font-mono"
+                    />
+                  </div>
+                </div>
+
+                {calculatedDiscount > 0 && (
+                  <div className="p-2.5 rounded-lg bg-emerald-50/70 border border-emerald-200 text-emerald-800 text-xs flex items-center justify-between">
+                    <span>Storefront Privilege Display:</span>
+                    <span className="font-bold font-mono">
+                      {formatINR(price)} (M.R.P. {formatINR(originalPrice)} &bull; {calculatedDiscount}% OFF)
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Section 3: Visual Imagery */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon className="w-4 h-4 text-gold-500" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                      3. High-Resolution Visual Assets
+                    </h3>
+                  </div>
+                  <span className="text-[11px] text-slate-400">
+                    {images.length} {images.length === 1 ? "asset" : "assets"} linked
+                  </span>
+                </div>
+
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder="Paste direct high-res image URL (e.g. Unsplash, CDN)..."
+                    value={newImageUrl}
+                    onChange={(e) => setNewImageUrl(e.target.value)}
+                    className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImage}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1 shrink-0"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add URL</span>
+                  </button>
+                </div>
+
+                {/* Thumbnails preview */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                  {images.map((img, idx) => (
+                    <div
+                      key={idx}
+                      className={`relative rounded-xl border overflow-hidden group transition-all ${
+                        img.isPrimary
+                          ? "ring-2 ring-gold-500 border-gold-500 shadow-xs"
+                          : "border-slate-200 bg-slate-50"
+                      }`}
+                    >
+                      <img
+                        src={img.url}
+                        alt={img.altText || `Garment ${idx + 1}`}
+                        className="w-full h-24 object-cover"
+                      />
+                      <div className="p-1.5 bg-white/95 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryImage(idx)}
+                          className={`font-semibold flex items-center gap-1 ${
+                            img.isPrimary ? "text-gold-600 font-bold" : "text-slate-400 hover:text-slate-700"
+                          }`}
+                        >
+                          {img.isPrimary && <Check className="w-3 h-3" />}
+                          {img.isPrimary ? "Primary" : "Set Primary"}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="text-slate-300 hover:text-rose-600 transition-colors p-0.5"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Section 4: Sizing & Variant Inventory */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-4 h-4 text-gold-500" />
+                    <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                      4. Sizing Variants & Stock Levels
+                    </h3>
+                  </div>
+                  <span className="text-xs text-navy-950 font-semibold">
+                    Total Stock: <strong className="text-gold-600">{totalCalculatedStock} units</strong>
+                  </span>
+                </div>
+
+                {/* Sizing Grid */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                  {variants.map((v, idx) => (
+                    <div
+                      key={idx}
+                      className="p-3 rounded-lg border border-slate-200 bg-slate-50/60 flex items-center justify-between gap-2"
+                    >
+                      <div>
+                        <span className="text-xs font-bold text-navy-950">{v.size}</span>
+                        <span className="block text-[10px] text-slate-400 font-mono">
+                          {v.sku || `variant ${idx + 1}`}
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <div className="flex items-center border border-slate-300 rounded bg-white overflow-hidden">
+                          <button
+                            type="button"
+                            onClick={() => handleStockChange(idx, v.stockQuantity - 1)}
+                            className="px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100 font-bold"
+                          >
+                            -
+                          </button>
+                          <input
+                            type="number"
+                            min={0}
+                            value={v.stockQuantity}
+                            onChange={(e) => handleStockChange(idx, parseInt(e.target.value) || 0)}
+                            className="w-10 text-center text-xs py-0.5 font-bold text-slate-800 focus:outline-none"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleStockChange(idx, v.stockQuantity + 1)}
+                            className="px-1.5 py-0.5 text-xs text-slate-500 hover:bg-slate-100 font-bold"
+                          >
+                            +
+                          </button>
+                        </div>
+
+                        {variants.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVariant(idx)}
+                            className="text-slate-300 hover:text-rose-600 transition-colors p-1"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Add Custom Size */}
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="text"
+                    placeholder="Custom size e.g. 3XL, Plus Size, Custom..."
+                    value={customSizeInput}
+                    onChange={(e) => setCustomSizeInput(e.target.value)}
+                    className="w-60 px-3 py-1.5 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddCustomSize}
+                    className="px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors flex items-center gap-1"
+                  >
+                    <Plus className="w-3 h-3" />
+                    <span>Add Size</span>
+                  </button>
+                </div>
+              </div>
+
+              {/* Section 5: Merchandising Toggles */}
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-slate-600 block mb-1">
+                  Storefront Merchandising & Visibility
+                </span>
+                <div className="flex flex-wrap items-center gap-5 text-xs text-slate-700">
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isActive}
+                      onChange={(e) => setIsActive(e.target.checked)}
+                      className="rounded border-slate-300 text-navy-950 focus:ring-navy-950"
+                    />
+                    <span className="font-semibold text-emerald-800">Available on Storefront</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isNewArrival}
+                      onChange={(e) => setIsNewArrival(e.target.checked)}
+                      className="rounded border-slate-300 text-navy-950 focus:ring-navy-950"
+                    />
+                    <span>New Arrival</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isFeatured}
+                      onChange={(e) => setIsFeatured(e.target.checked)}
+                      className="rounded border-slate-300 text-navy-950 focus:ring-navy-950"
+                    />
+                    <span>Featured in Spotlight</span>
+                  </label>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isBestseller}
+                      onChange={(e) => setIsBestseller(e.target.checked)}
+                      className="rounded border-slate-300 text-navy-950 focus:ring-navy-950"
+                    />
+                    <span>Bestseller</span>
+                  </label>
+                </div>
+              </div>
+
+              {/* Footer Submit */}
+              <div className="pt-4 border-t border-slate-200 flex items-center justify-end gap-3 sticky bottom-0 bg-white/95 py-3 -mx-6 px-6">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="px-4 py-2 text-xs font-medium rounded-lg text-slate-600 hover:bg-slate-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="px-6 py-2.5 text-xs font-semibold rounded-lg bg-navy-950 text-white hover:bg-navy-900 transition-all flex items-center gap-2 shadow-xs disabled:opacity-50"
+                >
+                  {submitting ? (
+                    <>
+                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                      <span>Saving Changes...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Save className="w-3.5 h-3.5 text-gold-400" />
+                      <span>Save Garment Changes</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}

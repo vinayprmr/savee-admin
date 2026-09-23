@@ -5,7 +5,14 @@ import {
   AdminOrder,
   OrderStatus,
   PaginatedAdminProducts,
+  AdminProductItem,
+  AdminProductDetail,
   AdminVariantItem,
+  AdminCategoryItem,
+  CreateCategoryPayload,
+  UpdateCategoryPayload,
+  CreateProductPayload,
+  UpdateProductPayload,
   AdminCouponItem,
   CreateCouponPayload,
   AdminReviewItem,
@@ -105,6 +112,69 @@ export const AdminService = {
       {
         method: "PATCH",
         body: JSON.stringify(payload),
+      }
+    );
+  },
+
+  async createProduct(payload: CreateProductPayload): Promise<AdminProductItem> {
+    return adminFetch<AdminProductItem>("/admin/inventory/products", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async deleteProduct(productId: string): Promise<{ success: boolean; productId: string }> {
+    return adminFetch<{ success: boolean; productId: string }>(
+      `/admin/inventory/products/${productId}`,
+      {
+        method: "DELETE",
+      }
+    );
+  },
+
+  async getProduct(productId: string): Promise<AdminProductDetail> {
+    return adminFetch<AdminProductDetail>(`/admin/inventory/products/${productId}`);
+  },
+
+  async updateProduct(
+    productId: string,
+    payload: UpdateProductPayload
+  ): Promise<AdminProductDetail> {
+    return adminFetch<AdminProductDetail>(`/admin/inventory/products/${productId}`, {
+      method: "PUT",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  // Categories
+  async listCategories(): Promise<AdminCategoryItem[]> {
+    return adminFetch<AdminCategoryItem[]>("/admin/categories");
+  },
+
+  async createCategory(payload: CreateCategoryPayload): Promise<AdminCategoryItem> {
+    return adminFetch<AdminCategoryItem>("/admin/categories", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async updateCategory(
+    categoryId: string,
+    payload: UpdateCategoryPayload
+  ): Promise<AdminCategoryItem> {
+    return adminFetch<AdminCategoryItem>(`/admin/categories/${categoryId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    });
+  },
+
+  async deleteCategory(
+    categoryId: string
+  ): Promise<{ success: boolean; action: string; message: string; categoryId: string }> {
+    return adminFetch<{ success: boolean; action: string; message: string; categoryId: string }>(
+      `/admin/categories/${categoryId}`,
+      {
+        method: "DELETE",
       }
     );
   },
