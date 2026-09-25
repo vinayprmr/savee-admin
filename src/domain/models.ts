@@ -298,6 +298,9 @@ export interface CreateImagePayload {
   url: string;
   altText?: string;
   isPrimary?: boolean;
+  mediaType?: "image" | "video";
+  thumbnailUrl?: string;
+  hasAudio?: boolean;
 }
 
 export interface CreateProductPayload {
@@ -328,6 +331,9 @@ export interface AdminImageItem {
   url: string;
   altText?: string;
   isPrimary: boolean;
+  mediaType?: "image" | "video";
+  thumbnailUrl?: string;
+  hasAudio?: boolean;
 }
 
 export interface AdminProductDetail extends AdminProductItem {

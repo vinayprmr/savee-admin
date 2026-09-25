@@ -13,6 +13,9 @@ import {
   Tag,
   Layers,
   ChevronRight,
+  ChevronLeft,
+  Film,
+  Volume2,
 } from "lucide-react";
 import {
   AdminCategoryItem,
@@ -71,15 +74,19 @@ export function AddGarmentDrawer({
   const [isFeatured, setIsFeatured] = useState(false);
   const [isBestseller, setIsBestseller] = useState(false);
 
-  // Images list
+  // Images & Video media list
   const [images, setImages] = useState<CreateImagePayload[]>([
     {
       url: "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=1000&q=80",
       altText: "Luxury Handcrafted Ensemble",
       isPrimary: true,
+      mediaType: "image",
     },
   ]);
+  const [mediaType, setMediaType] = useState<"image" | "video">("image");
   const [newImageUrl, setNewImageUrl] = useState("");
+  const [newThumbnailUrl, setNewThumbnailUrl] = useState("");
+  const [newHasAudio, setNewHasAudio] = useState(false);
 
   // Variants list
   const [variants, setVariants] = useState<CreateVariantPayload[]>(SAREE_PRESET_SIZES);
@@ -122,17 +129,43 @@ export function AddGarmentDrawer({
   };
 
   const handleAddImage = () => {
-    const trimmed = newImageUrl.trim();
-    if (!trimmed) return;
+    const trimmedUrl = newImageUrl.trim();
+    if (!trimmedUrl) return;
+
+    const isVideo = mediaType === "video" || /\.(mp4|webm|mov)(\?.*)?$/i.test(trimmedUrl);
+    const posterUrl = newThumbnailUrl.trim() || undefined;
+
     setImages((prev) => [
       ...prev,
       {
-        url: trimmed,
-        altText: title || "Atelier Silhouette",
+        url: trimmedUrl,
+        altText: title || (isVideo ? "Atelier Video Drape" : "Atelier Silhouette"),
         isPrimary: prev.length === 0,
+        mediaType: isVideo ? "video" : "image",
+        thumbnailUrl: isVideo
+          ? posterUrl ||
+            "https://images.unsplash.com/photo-1610030469983-98e550d6193c?auto=format&fit=crop&w=800&q=80"
+          : undefined,
+        hasAudio: isVideo ? newHasAudio : false,
       },
     ]);
+
     setNewImageUrl("");
+    setNewThumbnailUrl("");
+    setNewHasAudio(false);
+    setMediaType("image");
+  };
+
+  const handleMoveImage = (index: number, direction: "left" | "right") => {
+    setImages((prev) => {
+      const targetIndex = direction === "left" ? index - 1 : index + 1;
+      if (targetIndex < 0 || targetIndex >= prev.length) return prev;
+      const copy = [...prev];
+      const temp = copy[index];
+      copy[index] = copy[targetIndex];
+      copy[targetIndex] = temp;
+      return copy;
+    });
   };
 
   const handleSetPrimaryImage = (index: number) => {
@@ -182,6 +215,18 @@ export function AddGarmentDrawer({
   const totalCalculatedStock = variants.reduce((acc, v) => acc + v.stockQuantity, 0);
   const calculatedDiscount =
     originalPrice > price ? Math.round(((originalPrice - price) / originalPrice) * 100) : 0;
+
+  const handleAutoGenerateSku = () => {
+    const selectedCat = categories.find((c) => c.id === categoryId);
+    const catCode = selectedCat?.slug ? selectedCat.slug.substring(0, 3).toUpperCase() : "SAV";
+    const randomHex = Math.random().toString(36).substring(2, 7).toUpperCase();
+    setCustomSku(`SV-${catCode}-${randomHex}`);
+    if (error && error.toLowerCase().includes("sku")) {
+      setError(null);
+    }
+  };
+
+  const hasSkuError = Boolean(error && error.toLowerCase().includes("sku"));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -258,10 +303,10 @@ export function AddGarmentDrawer({
               </div>
               <div>
                 <h2 className="text-base font-serif font-bold text-navy-950">
-                  Commission New Atelier Garment
+                  Add New Garment
                 </h2>
                 <p className="text-xs text-slate-500 mt-0.5">
-                  Publish a new luxury style, configure sizing variants, and initialize stock.
+                  Publish a new style, configure sizing variants, and initialize inventory.
                 </p>
               </div>
             </div>
@@ -308,7 +353,7 @@ export function AddGarmentDrawer({
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Atelier Category *
+                    Category *
                   </label>
                   <select
                     value={categoryId}
@@ -375,11 +420,11 @@ export function AddGarmentDrawer({
 
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Atelier Narrative / Description
+                  Garment Story / Description
                 </label>
                 <textarea
                   rows={3}
-                  placeholder="Describe the silhouette, handloom provenance, gold zari detailing, and drape experience..."
+                  placeholder="Describe the silhouette, fabric weave, styling notes, and drape experience..."
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
@@ -425,16 +470,43 @@ export function AddGarmentDrawer({
                 </div>
 
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                    Base SKU Code (Optional)
-                  </label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600">
+                      Base SKU Code (Optional)
+                    </label>
+                    <button
+                      type="button"
+                      onClick={handleAutoGenerateSku}
+                      className="text-[10px] text-gold-600 hover:text-gold-700 font-semibold flex items-center gap-1 transition-colors cursor-pointer"
+                      title="Generate a unique Savee SKU"
+                    >
+                      <Sparkles className="w-2.5 h-2.5" />
+                      <span>Auto-Generate</span>
+                    </button>
+                  </div>
                   <input
                     type="text"
-                    placeholder="Auto-generated if empty"
+                    placeholder="e.g. SV-SAR-A1B2C"
                     value={customSku}
-                    onChange={(e) => setCustomSku(e.target.value)}
-                    className="w-full px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white font-mono"
+                    onChange={(e) => {
+                      setCustomSku(e.target.value);
+                      if (hasSkuError) setError(null);
+                    }}
+                    className={`w-full px-3 py-2 text-xs rounded-lg border font-mono transition-colors focus:outline-none focus:ring-1 ${
+                      hasSkuError
+                        ? "border-rose-400 ring-1 ring-rose-400 bg-rose-50/20 text-rose-900"
+                        : "border-slate-300 focus:ring-navy-900 bg-white"
+                    }`}
                   />
+                  {hasSkuError ? (
+                    <p className="text-[10px] text-rose-600 font-medium mt-1">
+                      {error}
+                    </p>
+                  ) : (
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      Leave empty to auto-assign a certified Savee SKU.
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -448,13 +520,13 @@ export function AddGarmentDrawer({
               )}
             </div>
 
-            {/* Section 3: Visual Imagery */}
+            {/* Section 3: Visual Imagery & Videos */}
             <div className="space-y-4">
               <div className="flex items-center justify-between pb-2 border-b border-slate-100">
                 <div className="flex items-center gap-2">
                   <ImageIcon className="w-4 h-4 text-gold-500" />
                   <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
-                    3. High-Resolution Visual Assets
+                    3. High-Resolution Visual Assets & Video
                   </h3>
                 </div>
                 <span className="text-[11px] text-slate-400">
@@ -462,61 +534,171 @@ export function AddGarmentDrawer({
                 </span>
               </div>
 
-              <div className="flex gap-2">
-                <input
-                  type="url"
-                  placeholder="Paste direct high-res image URL (e.g. Unsplash, CDN)..."
-                  value={newImageUrl}
-                  onChange={(e) => setNewImageUrl(e.target.value)}
-                  className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
-                />
+              {/* Media Type Switcher */}
+              <div className="flex items-center gap-2 p-1 bg-slate-100 rounded-lg max-w-xs">
                 <button
                   type="button"
-                  onClick={handleAddImage}
-                  className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1 shrink-0"
+                  onClick={() => setMediaType("image")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    mediaType === "image"
+                      ? "bg-white text-navy-950 shadow-2xs"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
                 >
-                  <Plus className="w-3.5 h-3.5" />
-                  <span>Add URL</span>
+                  <ImageIcon className="w-3.5 h-3.5" />
+                  <span>Still Photo</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setMediaType("video")}
+                  className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                    mediaType === "video"
+                      ? "bg-white text-gold-600 shadow-2xs font-bold"
+                      : "text-slate-500 hover:text-slate-800"
+                  }`}
+                >
+                  <Film className="w-3.5 h-3.5" />
+                  <span>Video Drape</span>
                 </button>
               </div>
 
-              {/* Thumbnails preview */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                {images.map((img, idx) => (
-                  <div
-                    key={idx}
-                    className={`relative rounded-xl border overflow-hidden group transition-all ${
-                      img.isPrimary
-                        ? "ring-2 ring-gold-500 border-gold-500 shadow-xs"
-                        : "border-slate-200 bg-slate-50"
-                    }`}
+              {/* Input Fields */}
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <input
+                    type="url"
+                    placeholder={
+                      mediaType === "video"
+                        ? "Paste direct video stream URL (.mp4, .webm)..."
+                        : "Paste direct high-res image URL (e.g. Unsplash, CDN)..."
+                    }
+                    value={newImageUrl}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setNewImageUrl(val);
+                      if (/\.(mp4|webm|mov)(\?.*)?$/i.test(val)) {
+                        setMediaType("video");
+                      }
+                    }}
+                    className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddImage}
+                    className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1 shrink-0"
                   >
-                    <img
-                      src={img.url}
-                      alt={img.altText || `Garment ${idx + 1}`}
-                      className="w-full h-24 object-cover"
+                    <Plus className="w-3.5 h-3.5" />
+                    <span>Add {mediaType === "video" ? "Video" : "URL"}</span>
+                  </button>
+                </div>
+
+                {mediaType === "video" && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                    <input
+                      type="url"
+                      placeholder="Poster / Cover Image URL (displayed on cards & thumbnail)..."
+                      value={newThumbnailUrl}
+                      onChange={(e) => setNewThumbnailUrl(e.target.value)}
+                      className="px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
                     />
-                    <div className="p-1.5 bg-white/95 border-t border-slate-100 flex items-center justify-between text-[10px]">
-                      <button
-                        type="button"
-                        onClick={() => handleSetPrimaryImage(idx)}
-                        className={`font-semibold flex items-center gap-1 ${
-                          img.isPrimary ? "text-gold-600 font-bold" : "text-slate-400 hover:text-slate-700"
-                        }`}
-                      >
-                        {img.isPrimary && <Check className="w-3 h-3" />}
-                        {img.isPrimary ? "Primary" : "Set Primary"}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleRemoveImage(idx)}
-                        className="text-slate-300 hover:text-rose-600 transition-colors p-0.5"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
+                    <label className="flex items-center gap-2 px-3 py-2 text-xs text-slate-700 bg-slate-50 rounded-lg border border-slate-200 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={newHasAudio}
+                        onChange={(e) => setNewHasAudio(e.target.checked)}
+                        className="rounded border-slate-300 text-gold-500 focus:ring-gold-500"
+                      />
+                      <Volume2 className="w-3.5 h-3.5 text-slate-500" />
+                      <span>Video includes sound / audio track</span>
+                    </label>
                   </div>
-                ))}
+                )}
+              </div>
+
+              {/* Thumbnails preview & sequence management */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {images.map((img, idx) => {
+                  const isVid = img.mediaType === "video";
+                  const coverSrc = isVid ? img.thumbnailUrl || img.url : img.url;
+
+                  return (
+                    <div
+                      key={idx}
+                      className={`relative rounded-xl border overflow-hidden group transition-all ${
+                        img.isPrimary
+                          ? "ring-2 ring-gold-500 border-gold-500 shadow-xs"
+                          : "border-slate-200 bg-slate-50"
+                      }`}
+                    >
+                      {/* Image / Video thumbnail */}
+                      <div className="relative w-full h-24 bg-slate-900 overflow-hidden">
+                        <img
+                          src={coverSrc}
+                          alt={img.altText || `Garment asset ${idx + 1}`}
+                          className="w-full h-full object-cover"
+                        />
+                        {isVid && (
+                          <div className="absolute top-1.5 left-1.5 px-1.5 py-0.5 rounded bg-black/75 backdrop-blur-xs text-gold-400 text-[10px] font-semibold flex items-center gap-1">
+                            <Film className="w-3 h-3" />
+                            <span>Video</span>
+                            {img.hasAudio && <Volume2 className="w-2.5 h-2.5 text-white/80" />}
+                          </div>
+                        )}
+                        <div className="absolute top-1.5 right-1.5 px-1 rounded bg-black/60 text-white text-[9px] font-mono">
+                          #{idx + 1}
+                        </div>
+                      </div>
+
+                      {/* Card Controls */}
+                      <div className="p-1.5 bg-white/95 border-t border-slate-100 flex items-center justify-between text-[10px]">
+                        <div className="flex items-center gap-0.5">
+                          {idx > 0 && (
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(idx, "left")}
+                              className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded"
+                              title="Move Earlier"
+                            >
+                              <ChevronLeft className="w-3 h-3" />
+                            </button>
+                          )}
+                          {idx < images.length - 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleMoveImage(idx, "right")}
+                              className="p-1 text-slate-400 hover:text-slate-700 hover:bg-slate-100 rounded"
+                              title="Move Later"
+                            >
+                              <ChevronRight className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => handleSetPrimaryImage(idx)}
+                          className={`font-semibold flex items-center gap-1 ${
+                            img.isPrimary
+                              ? "text-gold-600 font-bold"
+                              : "text-slate-400 hover:text-slate-700"
+                          }`}
+                        >
+                          {img.isPrimary && <Check className="w-3 h-3" />}
+                          {img.isPrimary ? "Primary" : "Set Primary"}
+                        </button>
+
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveImage(idx)}
+                          className="text-slate-300 hover:text-rose-600 transition-colors p-0.5"
+                          title="Remove media"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </div>
 
@@ -679,12 +861,12 @@ export function AddGarmentDrawer({
                 {submitting ? (
                   <>
                     <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                    <span>Publishing to Atelier...</span>
+                    <span>Publishing Garment...</span>
                   </>
                 ) : (
                   <>
                     <Sparkles className="w-3.5 h-3.5 text-gold-400" />
-                    <span>Publish Garment to Atelier</span>
+                    <span>Publish Garment</span>
                   </>
                 )}
               </button>
