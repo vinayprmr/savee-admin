@@ -119,7 +119,7 @@ export default function InventoryPage() {
   const handleDeleteProduct = async (prod: AdminProductItem) => {
     if (
       !window.confirm(
-        `Are you sure you want to remove "${prod.title}" from the atelier catalog?`
+        `Are you sure you want to remove "${prod.title}" from the Savee catalog?`
       )
     ) {
       return;
@@ -330,7 +330,7 @@ export default function InventoryPage() {
                   <th className="py-3 px-4">Garment Style</th>
                   <th className="py-3 px-4">Category</th>
                   <th className="py-3 px-4">SKU Code</th>
-                  <th className="py-3 px-4">Atelier Price</th>
+                  <th className="py-3 px-4">Selling Price</th>
                   <th className="py-3 px-4">Total Stock</th>
                   <th className="py-3 px-4 text-right">Status</th>
                   <th className="py-3 px-4 text-center w-12">Actions</th>
@@ -372,7 +372,7 @@ export default function InventoryPage() {
                               />
                             ) : (
                               <div className="w-10 h-13 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] text-slate-400">
-                                Atelier
+                                Savee
                               </div>
                             )}
                             <div>

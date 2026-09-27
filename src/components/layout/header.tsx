@@ -6,16 +6,16 @@ import { Clock, ShieldCheck } from "lucide-react";
 
 const TITLE_MAP: Record<string, { title: string; subtitle: string }> = {
   "/": {
-    title: "Atelier Executive Dashboard",
+    title: "Executive Dashboard",
     subtitle: "Real-time metrics, revenue performance, and active order flow",
   },
   "/orders": {
     title: "Orders & Fulfillment Pipeline",
-    subtitle: "Track handcrafted orders, advance Delhivery milestones, and inspect invoices",
+    subtitle: "Track customer orders, advance Delhivery milestones, and inspect invoices",
   },
   "/inventory": {
     title: "Catalog & Variant Inventory Control",
-    subtitle: "Manage stock levels across all 126 luxury styles and sizing variations",
+    subtitle: "Manage stock levels across all styles and sizing variations",
   },
   "/coupons": {
     title: "Promotions & Privilege Codes",
@@ -23,11 +23,11 @@ const TITLE_MAP: Record<string, { title: string; subtitle: string }> = {
   },
   "/reviews": {
     title: "Customer Review Moderation",
-    subtitle: "Inspect, approve, and curate verified patron reviews for public display",
+    subtitle: "Inspect, approve, and curate verified customer reviews for public display",
   },
   "/customers": {
-    title: "Customer Directory & Patronage",
-    subtitle: "Lifetime spending, order frequency, and registered luxury patron accounts",
+    title: "Customer Directory & Accounts",
+    subtitle: "Lifetime spending, order frequency, and registered customer accounts",
   },
 };
 
@@ -54,7 +54,7 @@ export function Header() {
   }, []);
 
   const meta = TITLE_MAP[pathname] || {
-    title: "Savee Atelier Portal",
+    title: "Savee Admin Portal",
     subtitle: "Administrative Operations",
   };
 

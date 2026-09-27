@@ -70,7 +70,7 @@ export default function ReviewsPage() {
             Customer Review Moderation
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            Curate customer experiences, verify purchase authenticity, and maintain atelier reputation.
+            Curate customer experiences, verify purchase authenticity, and maintain brand reputation.
           </p>
         </div>
 

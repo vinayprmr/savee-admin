@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Savee Atelier | Operations & Brand Management Portal",
+  title: "Savee | Brand & Operations Management Portal",
   description:
-    "Internal administration system for Savee luxury fashion house. Order fulfillment, inventory management, promotions, and analytics.",
+    "Internal administration system for Savee fashion brand. Order fulfillment, inventory management, promotions, and analytics.",
 };
 
 export default function RootLayout({

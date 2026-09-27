@@ -157,7 +157,7 @@ export function ManageCategoriesModal({
             </div>
             <div>
               <h2 className="text-base font-serif font-bold text-navy-950">
-                Atelier Garment Categories
+                Garment Categories
               </h2>
               <p className="text-xs text-slate-500 mt-0.5">
                 Manage garment collections, navigation taxonomy, and catalog classifications.
@@ -345,7 +345,7 @@ export function ManageCategoriesModal({
 
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-slate-600 mb-1">
-                  Atelier Description
+                  Category Description
                 </label>
                 <textarea
                   rows={2}

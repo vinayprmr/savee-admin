@@ -44,7 +44,7 @@ export default function DashboardLayout({
           </div>
         </div>
         <div className="mt-4 font-serif text-lg tracking-widest text-gold-300">SAVEE</div>
-        <div className="text-xs text-slate-400 tracking-wider mt-1">Connecting to Atelier Core...</div>
+        <div className="text-xs text-slate-400 tracking-wider mt-1">Connecting to Savee Core...</div>
       </div>
     );
   }

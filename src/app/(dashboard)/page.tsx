@@ -93,7 +93,7 @@ export default function DashboardOverviewPage() {
         <div>
           <div className="flex items-center gap-2 text-gold-400 text-xs font-semibold uppercase tracking-wider">
             <Sparkles className="w-4 h-4" />
-            <span>Atelier Operational Pulse</span>
+            <span>Operational Pulse</span>
           </div>
           <h2 className="text-2xl font-serif font-bold text-slate-100 mt-1">
             Welcome to the Savee Command Center
@@ -247,7 +247,7 @@ export default function DashboardOverviewPage() {
         <div className="bg-white rounded-xl border border-slate-200 shadow-xs p-6 flex flex-col justify-between">
           <div>
             <h3 className="text-sm font-semibold text-slate-900 mb-1">
-              Atelier Operations Hub
+              Savee Operations Hub
             </h3>
             <p className="text-xs text-slate-500 mb-4">
               Direct access to brand management modules
@@ -323,7 +323,7 @@ export default function DashboardOverviewPage() {
               Recent Customer Orders
             </h3>
             <p className="text-xs text-slate-500 mt-0.5">
-              Latest patron orders submitted to the atelier
+              Latest customer orders placed on Savee
             </p>
           </div>
           <Link

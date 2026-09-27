@@ -89,7 +89,7 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
     } catch (err: any) {
       set({
         isLoading: false,
-        error: err.message || "Failed to authenticate with Savee Atelier credentials",
+        error: err.message || "Failed to authenticate with Savee Admin credentials",
       });
       return false;
     }

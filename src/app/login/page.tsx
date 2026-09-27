@@ -11,7 +11,7 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading, error } = useAdminAuthStore();
 
   const [email, setEmail] = useState("admin@savee.in");
-  const [password, setPassword] = useState("Savee@Atelier2026");
+  const [password, setPassword] = useState("Savee@Admin2026");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -32,7 +32,7 @@ export default function LoginPage() {
 
   const handleFillDemo = () => {
     setEmail("admin@savee.in");
-    setPassword("Savee@Atelier2026");
+    setPassword("Savee@Admin2026");
   };
 
   return (
@@ -42,11 +42,11 @@ export default function LoginPage() {
       <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl pointer-events-none" />
 
       <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-200 relative z-10">
-        {/* Atelier Monogram Header */}
+        {/* Savee Header */}
         <div className="bg-navy-900 p-8 text-center border-b border-navy-800 flex flex-col items-center">
           <SaveeVerticalLogo variant="white" className="h-16 w-auto mb-1" />
           <p className="text-xs uppercase tracking-widest text-slate-300 mt-2 font-medium">
-            Atelier & Brand Operations Portal
+            Brand & Operations Portal
           </p>
         </div>
 

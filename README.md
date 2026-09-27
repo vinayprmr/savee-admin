@@ -1,8 +1,8 @@
-# Savee Atelier — Brand Operations & Fulfillment Portal
+# Savee — Brand Operations & Fulfillment Portal
 
 The administrative command center for **Savee**, a luxury Direct-to-Consumer (D2C) Indian fashion house specializing in handcrafted Banarasi silk sarees, bridal lehengas, designer kurta sets, anarkalis, gowns, co-ords, and luxury accessories.
 
-> **Design Tenet**: Savee is a single-brand luxury fashion house, **not** a marketplace. Savee owns the product catalog, atelier inventory, and direct Delhivery fulfillment pipeline.
+> **Design Tenet**: Savee is a single-brand luxury fashion house, **not** a marketplace. Savee owns the product catalog, inventory, and direct Delhivery fulfillment pipeline.
 
 ---
 
@@ -10,7 +10,7 @@ The administrative command center for **Savee**, a luxury Direct-to-Consumer (D2
 
 The portal delivers 5 core brand management modules:
 
-1. **Atelier Executive Dashboard (`/`)**
+1. **Executive Dashboard (`/`)**
    - Live KPI cards: Gross Revenue ₹, Total Orders, Active In Fulfillment, Average Order Value (AOV ₹), Low Stock Alert.
    - 126 Garments distribution across categories (Sarees, Lehengas, Kurtas, Anarkalis, Gowns, Co-ord Sets, Dresses, Jewelry).
    - Recent orders feed with instant inspection drawer.
@@ -23,7 +23,7 @@ The portal delivers 5 core brand management modules:
      - Customer contact coordinates & delivery address.
      - Garment snapshots with selected size, color swatch, and quantities.
      - 5% Luxury GST breakdown, promotional discounts, and insured white-glove shipping.
-     - Milestone advancement with custom atelier handcrafting notes and Delhivery AWB synchronization.
+     - Milestone advancement with custom fulfillment notes and Delhivery AWB synchronization.
 
 3. **Catalog & Variant Inventory Control (`/inventory`)**
    - Comprehensive inventory control over all 126 catalog styles.
@@ -46,8 +46,8 @@ The portal delivers 5 core brand management modules:
 ## 🔑 Administrative Access
 
 - **Portal URL**: `http://localhost:3001`
-- **Atelier Email**: `admin@savee.in`
-- **Atelier Password**: `Savee@Atelier2026`
+- **Admin Email**: `admin@savee.in`
+- **Admin Password**: `Savee@Admin2026`
 - **Role Claim**: `admin` (JWT Bearer Token)
 
 *(The login screen includes a "Fill Credentials" button for instant one-click testing.)*

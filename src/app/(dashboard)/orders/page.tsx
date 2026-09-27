@@ -184,7 +184,7 @@ export default function OrdersPage() {
                     {/* Items */}
                     <td className="py-3.5 px-4">
                       <div className="font-medium text-slate-800">
-                        {o.items[0]?.productTitle || "Atelier Garment"}
+                        {o.items[0]?.productTitle || "Savee Garment"}
                         {o.items.length > 1 && (
                           <span className="text-slate-400 font-normal"> +{o.items.length - 1} more</span>
                         )}

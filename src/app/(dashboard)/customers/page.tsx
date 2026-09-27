@@ -66,7 +66,7 @@ export default function CustomersPage() {
             Customer Lifetime Directory
           </h2>
           <p className="text-xs text-slate-500 mt-1">
-            View registered atelier patrons, lifetime garment spend, and regional distribution.
+            View registered customers, lifetime garment spend, and regional distribution.
           </p>
         </div>
 

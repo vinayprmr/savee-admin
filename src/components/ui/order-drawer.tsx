@@ -122,7 +122,7 @@ export function OrderDrawer({
               <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                 <div className="flex items-center gap-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <MapPin className="w-4 h-4 text-gold-500" />
-                  Atelier Shipping Destination
+                  Shipping Destination
                 </div>
                 <div className="text-xs text-slate-800 font-medium">
                   {order.shippingAddress.streetAddress}
@@ -153,7 +153,7 @@ export function OrderDrawer({
                       />
                     ) : (
                       <div className="w-14 h-18 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-xs text-slate-400">
-                        Atelier
+                        Savee
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
@@ -206,7 +206,7 @@ export function OrderDrawer({
               </div>
               <div className="flex items-center justify-between text-xs text-slate-600">
                 <span>Insured White-Glove Shipping</span>
-                <span>{order.shippingFee === 0 ? "Free Atelier Delivery" : formatINR(order.shippingFee)}</span>
+                <span>{order.shippingFee === 0 ? "Free Delivery" : formatINR(order.shippingFee)}</span>
               </div>
               <div className="pt-2 border-t border-slate-200 flex items-center justify-between text-sm font-bold text-navy-950">
                 <span>Grand Total</span>
@@ -337,13 +337,13 @@ export function OrderDrawer({
 
                 <div>
                   <label className="block text-xs font-medium text-slate-700 mb-1">
-                    Atelier Handcrafting / Fulfillment Notes
+                    Fulfillment / Internal Notes
                   </label>
                   <textarea
                     rows={2}
                     value={notes}
                     onChange={(e) => setNotes(e.target.value)}
-                    placeholder="e.g. Hand-embroidery completed. Quality check cleared at Jaipur atelier."
+                    placeholder="e.g. Quality check cleared and packed for dispatch."
                     className="w-full text-xs rounded border border-slate-300 p-2 bg-white text-slate-900 focus:outline-none focus:ring-1 focus:ring-navy-900"
                   />
                 </div>

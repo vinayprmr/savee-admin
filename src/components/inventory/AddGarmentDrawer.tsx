@@ -139,7 +139,7 @@ export function AddGarmentDrawer({
       ...prev,
       {
         url: trimmedUrl,
-        altText: title || (isVideo ? "Atelier Video Drape" : "Atelier Silhouette"),
+        altText: title || (isVideo ? "Product Video" : "Product Image"),
         isPrimary: prev.length === 0,
         mediaType: isVideo ? "video" : "image",
         thumbnailUrl: isVideo
@@ -241,7 +241,7 @@ export function AddGarmentDrawer({
       return;
     }
     if (price <= 0) {
-      setError("Atelier price must be greater than zero.");
+      setError("Selling price must be greater than zero.");
       return;
     }
     if (variants.length === 0) {
