@@ -63,6 +63,9 @@ export async function adminFetch<T>(
       // Clear token on 401
       localStorage.removeItem("savee_admin_token");
       localStorage.removeItem("savee_admin_profile");
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
     }
 
     throw new ApiError(response.status, errorDetail);

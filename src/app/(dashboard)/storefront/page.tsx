@@ -86,11 +86,48 @@ export default function StorefrontCMSPage() {
     });
   };
 
-  if (loading || !settings) {
+  if (loading && !settings) {
     return (
       <div className="p-12 text-center text-xs text-slate-400">
         <RefreshCw className="w-6 h-6 animate-spin mx-auto text-gold-500 mb-2" />
         Loading storefront content configuration...
+      </div>
+    );
+  }
+
+  if (error && !settings) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-6 bg-white border border-rose-200 rounded-xl shadow-xs text-center space-y-4">
+        <div className="w-12 h-12 bg-rose-50 text-rose-600 rounded-full flex items-center justify-center mx-auto">
+          <AlertCircle className="w-6 h-6" />
+        </div>
+        <div>
+          <h3 className="text-sm font-semibold text-slate-800">Failed to Load Storefront Settings</h3>
+          <p className="text-xs text-rose-600 mt-1">{error}</p>
+        </div>
+        <button
+          onClick={fetchSettings}
+          className="px-4 py-2 bg-navy-950 text-white rounded-lg text-xs font-medium hover:bg-navy-900 transition-colors inline-flex items-center gap-2"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Retry Loading</span>
+        </button>
+      </div>
+    );
+  }
+
+  if (!settings) {
+    return (
+      <div className="max-w-md mx-auto my-16 p-6 bg-white border border-slate-200 rounded-xl shadow-xs text-center space-y-4">
+        <AlertCircle className="w-6 h-6 text-slate-400 mx-auto" />
+        <p className="text-xs text-slate-600">No storefront configuration found.</p>
+        <button
+          onClick={fetchSettings}
+          className="px-4 py-2 bg-navy-950 text-white rounded-lg text-xs font-medium hover:bg-navy-900 transition-colors inline-flex items-center gap-2"
+        >
+          <RefreshCw className="w-3.5 h-3.5" />
+          <span>Retry</span>
+        </button>
       </div>
     );
   }

@@ -16,6 +16,23 @@ interface AdminAuthState {
   logout: () => void;
 }
 
+function isTokenExpired(token: string): boolean {
+  try {
+    const payloadBase64 = token.split(".")[1];
+    if (!payloadBase64) return true;
+    const base64 = payloadBase64.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonStr =
+      typeof window !== "undefined" && typeof window.atob === "function"
+        ? window.atob(base64)
+        : Buffer.from(base64, "base64").toString("utf-8");
+    const decoded = JSON.parse(jsonStr);
+    if (!decoded.exp) return false;
+    return decoded.exp <= Math.floor(Date.now() / 1000) + 10;
+  } catch {
+    return true;
+  }
+}
+
 export const useAdminAuthStore = create<AdminAuthState>((set) => ({
   token: null,
   admin: null,
@@ -32,7 +49,7 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
     try {
       const token = localStorage.getItem("savee_admin_token");
       const profileStr = localStorage.getItem("savee_admin_profile");
-      if (token && profileStr) {
+      if (token && profileStr && !isTokenExpired(token)) {
         const admin = JSON.parse(profileStr) as AdminProfile;
         set({
           token,
@@ -41,6 +58,10 @@ export const useAdminAuthStore = create<AdminAuthState>((set) => ({
           isLoading: false,
         });
         return;
+      }
+      if (token || profileStr) {
+        localStorage.removeItem("savee_admin_token");
+        localStorage.removeItem("savee_admin_profile");
       }
     } catch {
       // Ignore JSON parse errors
