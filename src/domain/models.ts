@@ -70,11 +70,29 @@ export interface ShippingAddress {
   country: string;
 }
 
+export interface BuyerContact {
+  name: string;
+  email: string;
+  phone: string;
+}
+
+export interface BillingAddress {
+  addressLine1: string;
+  city: string;
+  state: string;
+  postalCode: string;
+  country: string;
+}
+
 export interface AdminOrder {
   id: string;
   orderNumber: string;
   customerEmail: string;
   customerPhone: string;
+  buyer?: BuyerContact;
+  isGift?: boolean;
+  giftMessage?: string;
+  billingAddress?: BillingAddress;
   shippingAddress: ShippingAddress;
   items: OrderItem[];
   subtotal: number;

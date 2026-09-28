@@ -170,14 +170,26 @@ export default function OrdersPage() {
 
                     {/* Patron & Destination */}
                     <td className="py-3.5 px-4">
-                      <div className="font-semibold text-slate-900">
-                        {o.shippingAddress.fullName}
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-900">
+                          {o.buyer ? o.buyer.name : o.shippingAddress.fullName}
+                        </span>
+                        {o.isGift && (
+                          <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                            Gift 🎁
+                          </span>
+                        )}
                       </div>
+                      {o.isGift && (
+                        <div className="text-[10px] text-slate-500">
+                          To: {o.shippingAddress.fullName}
+                        </div>
+                      )}
                       <div className="text-[11px] text-slate-500">
                         {o.shippingAddress.city}, {o.shippingAddress.state}
                       </div>
                       <div className="text-[11px] text-slate-400 font-mono">
-                        {o.customerPhone}
+                        {o.buyer?.phone || o.customerPhone}
                       </div>
                     </td>
 

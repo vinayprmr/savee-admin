@@ -14,6 +14,7 @@ import {
   Clock,
   Send,
   AlertCircle,
+  Gift,
 } from "lucide-react";
 import { AdminService } from "../../services/admin.service";
 
@@ -86,6 +87,12 @@ export function OrderDrawer({
                   Order #{order.orderNumber}
                 </h2>
                 <OrderStatusBadge status={order.orderStatus} />
+                {order.isGift && (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-800 border border-amber-300">
+                    <Gift className="w-3 h-3 text-amber-600" />
+                    Gift Order
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-500 mt-1">
                 Placed on {formatDate(order.createdAt)} • Internal ID: {order.id}
@@ -101,37 +108,53 @@ export function OrderDrawer({
 
           {/* Scrollable Body */}
           <div className="flex-1 overflow-y-auto p-6 space-y-6">
-            {/* Customer & Shipping Details */}
+            {/* Gifting Note Banner if present */}
+            {order.isGift && order.giftMessage && (
+              <div className="p-4 rounded-lg bg-amber-50/70 border border-amber-200">
+                <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-amber-900 mb-1.5">
+                  <Gift className="w-4 h-4 text-amber-600" />
+                  Enclosed Recipient Gift Note
+                </div>
+                <div className="text-xs italic text-amber-950 font-serif bg-white/70 p-3 rounded border border-amber-200/70">
+                  &ldquo;{order.giftMessage}&rdquo;
+                </div>
+              </div>
+            )}
+
+            {/* Customer, Buyer & Shipping Details */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                 <div className="flex items-center gap-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <Package className="w-4 h-4 text-gold-500" />
-                  Customer Details
+                  {order.buyer ? "Purchaser / Buyer" : "Customer Details"}
                 </div>
                 <div className="text-sm font-medium text-slate-900">
-                  {order.shippingAddress.fullName}
+                  {order.buyer?.name || order.shippingAddress.fullName}
                 </div>
                 <div className="text-xs text-slate-600 mt-0.5">
-                  {order.customerEmail}
+                  {order.buyer?.email || order.customerEmail}
                 </div>
                 <div className="text-xs text-slate-600 mt-0.5">
-                  {order.customerPhone}
+                  {order.buyer?.phone || order.customerPhone}
                 </div>
               </div>
 
               <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                 <div className="flex items-center gap-2 mb-2 text-xs font-semibold uppercase tracking-wider text-slate-500">
                   <MapPin className="w-4 h-4 text-gold-500" />
-                  Shipping Destination
+                  {order.isGift ? "Gift Recipient & Destination" : "Shipping Destination"}
                 </div>
-                <div className="text-xs text-slate-800 font-medium">
+                <div className="text-xs text-slate-800 font-semibold mb-1">
+                  Recipient: {order.shippingAddress.fullName} ({order.shippingAddress.phone})
+                </div>
+                <div className="text-xs text-slate-800">
                   {order.shippingAddress.streetAddress}
                 </div>
                 <div className="text-xs text-slate-600 mt-0.5">
                   {order.shippingAddress.city}, {order.shippingAddress.state} -{" "}
                   {order.shippingAddress.postalCode}
                 </div>
-                <div className="text-xs text-slate-600 mt-0.5">
+                <div className="text-xs text-slate-600 mt-0.5 font-medium text-slate-700">
                   {order.shippingAddress.country}
                 </div>
               </div>
