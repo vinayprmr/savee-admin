@@ -76,8 +76,8 @@ const config: Config = {
         },
       },
       fontFamily: {
-        serif: ["var(--font-serif)", "Cormorant Garamond", "Georgia", "serif"],
-        sans: ["var(--font-sans)", "Plus Jakarta Sans", "Inter", "sans-serif"],
+        serif: ["'Cormorant Garamond'", "var(--font-serif)", "Georgia", "serif"],
+        sans: ["'Plus Jakarta Sans'", "var(--font-sans)", "Inter", "sans-serif"],
       },
       boxShadow: {
         subtle: "0 1px 3px 0 rgba(11, 37, 69, 0.05), 0 1px 2px -1px rgba(11, 37, 69, 0.05)",
