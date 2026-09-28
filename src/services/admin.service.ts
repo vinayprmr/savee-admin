@@ -20,6 +20,7 @@ import {
   StorefrontSettings,
   UpdateStorefrontSettingsPayload,
   PaginatedSubscribers,
+  MediaUploadResult,
 } from "../domain/models";
 import { adminFetch } from "../lib/api-client";
 
@@ -249,5 +250,15 @@ export const AdminService = {
 
     const qs = query.toString();
     return adminFetch<PaginatedSubscribers>(`/admin/subscribers${qs ? `?${qs}` : ""}`);
+  },
+
+  // Media File Uploads
+  async uploadMedia(file: File): Promise<MediaUploadResult> {
+    const formData = new FormData();
+    formData.append("file", file);
+    return adminFetch<MediaUploadResult>("/admin/media/upload", {
+      method: "POST",
+      body: formData,
+    });
   },
 };

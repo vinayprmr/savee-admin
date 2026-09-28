@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   SlidersHorizontal,
   Save,
@@ -15,8 +15,22 @@ import {
   HelpCircle,
   Search,
   Quote,
+  Trash2,
+  Upload,
+  Image as ImageIcon,
+  Compass,
+  Camera,
+  Mail,
+  Phone,
+  Truck,
+  Globe,
+  Loader2,
 } from "lucide-react";
-import { StorefrontSettings } from "../../../domain/models";
+import {
+  StorefrontSettings,
+  OccasionCMSItem,
+  CommunityGalleryCMSItem,
+} from "../../../domain/models";
 import { AdminService } from "../../../services/admin.service";
 
 export default function StorefrontCMSPage() {
@@ -25,6 +39,7 @@ export default function StorefrontCMSPage() {
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadingIndex, setUploadingIndex] = useState<{ section: "occasion" | "community"; index: number } | null>(null);
 
   // New trending search input
   const [newTag, setNewTag] = useState("");
@@ -84,6 +99,95 @@ export default function StorefrontCMSPage() {
       ...settings,
       trending_searches: settings.trending_searches.filter((t) => t !== tagToRemove),
     });
+  };
+
+  // Occasions Handlers
+  const handleAddOccasion = () => {
+    if (!settings) return;
+    const current = settings.occasions || [];
+    setSettings({
+      ...settings,
+      occasions: [
+        ...current,
+        {
+          title: "New Occasion",
+          subtitle: "Curated Edits",
+          image: "/brand/garment-placeholder.svg",
+          href: "/shop",
+        },
+      ],
+    });
+  };
+
+  const handleUpdateOccasion = (index: number, patch: Partial<OccasionCMSItem>) => {
+    if (!settings) return;
+    const current = [...(settings.occasions || [])];
+    current[index] = { ...current[index], ...patch };
+    setSettings({ ...settings, occasions: current });
+  };
+
+  const handleRemoveOccasion = (index: number) => {
+    if (!settings) return;
+    const current = [...(settings.occasions || [])];
+    current.splice(index, 1);
+    setSettings({ ...settings, occasions: current });
+  };
+
+  const handleOccasionImageUpload = async (index: number, file: File) => {
+    if (!settings) return;
+    try {
+      setUploadingIndex({ section: "occasion", index });
+      const res = await AdminService.uploadMedia(file);
+      handleUpdateOccasion(index, { image: res.url });
+    } catch (err: any) {
+      alert(err.message || "Failed to upload image");
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
+  // Community Gallery Handlers
+  const handleAddCommunityItem = () => {
+    if (!settings) return;
+    const current = settings.community_gallery || [];
+    setSettings({
+      ...settings,
+      community_gallery: [
+        ...current,
+        {
+          image: "/brand/garment-placeholder.svg",
+          caption: "Savee Heritage Silk",
+          link: "https://instagram.com",
+        },
+      ],
+    });
+  };
+
+  const handleUpdateCommunityItem = (index: number, patch: Partial<CommunityGalleryCMSItem>) => {
+    if (!settings) return;
+    const current = [...(settings.community_gallery || [])];
+    current[index] = { ...current[index], ...patch };
+    setSettings({ ...settings, community_gallery: current });
+  };
+
+  const handleRemoveCommunityItem = (index: number) => {
+    if (!settings) return;
+    const current = [...(settings.community_gallery || [])];
+    current.splice(index, 1);
+    setSettings({ ...settings, community_gallery: current });
+  };
+
+  const handleCommunityImageUpload = async (index: number, file: File) => {
+    if (!settings) return;
+    try {
+      setUploadingIndex({ section: "community", index });
+      const res = await AdminService.uploadMedia(file);
+      handleUpdateCommunityItem(index, { image: res.url });
+    } catch (err: any) {
+      alert(err.message || "Failed to upload image");
+    } finally {
+      setUploadingIndex(null);
+    }
   };
 
   if (loading && !settings) {
@@ -313,6 +417,21 @@ export default function StorefrontCMSPage() {
         <div className="grid grid-cols-1 gap-4">
           <div>
             <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Eyebrow Tagline
+            </label>
+            <input
+              type="text"
+              value={settings.hero_eyebrow || ""}
+              onChange={(e) =>
+                setSettings({ ...settings, hero_eyebrow: e.target.value })
+              }
+              placeholder="e.g. Festive Elegance & Modern Heritage"
+              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-medium focus:outline-none focus:ring-1 focus:ring-navy-900"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
               Main Headline
             </label>
             <input
@@ -397,33 +516,66 @@ export default function StorefrontCMSPage() {
             Hero Trust Badges (3 Pillars)
           </label>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <input
-              type="text"
-              value={settings.hero_badge_1}
-              onChange={(e) =>
-                setSettings({ ...settings, hero_badge_1: e.target.value })
-              }
-              placeholder="Badge 1"
-              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white"
-            />
-            <input
-              type="text"
-              value={settings.hero_badge_2}
-              onChange={(e) =>
-                setSettings({ ...settings, hero_badge_2: e.target.value })
-              }
-              placeholder="Badge 2"
-              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white"
-            />
-            <input
-              type="text"
-              value={settings.hero_badge_3}
-              onChange={(e) =>
-                setSettings({ ...settings, hero_badge_3: e.target.value })
-              }
-              placeholder="Badge 3"
-              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white"
-            />
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={settings.hero_badge_1}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_1: e.target.value })
+                }
+                placeholder="Pillar 1 Title (e.g. 100% Pure Handloom)"
+                className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-medium"
+              />
+              <input
+                type="text"
+                value={settings.hero_badge_1_subtitle || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_1_subtitle: e.target.value })
+                }
+                placeholder="Pillar 1 Subtitle (e.g. Certified Silk Mark)"
+                className="w-full px-3 py-1.5 text-[11px] rounded border border-slate-200 bg-slate-50 text-slate-600"
+              />
+            </div>
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={settings.hero_badge_2}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_2: e.target.value })
+                }
+                placeholder="Pillar 2 Title (e.g. Bespoke Tailoring)"
+                className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-medium"
+              />
+              <input
+                type="text"
+                value={settings.hero_badge_2_subtitle || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_2_subtitle: e.target.value })
+                }
+                placeholder="Pillar 2 Subtitle (e.g. Custom fit on demand)"
+                className="w-full px-3 py-1.5 text-[11px] rounded border border-slate-200 bg-slate-50 text-slate-600"
+              />
+            </div>
+            <div className="space-y-1">
+              <input
+                type="text"
+                value={settings.hero_badge_3}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_3: e.target.value })
+                }
+                placeholder="Pillar 3 Title (e.g. Pan-India Express)"
+                className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-medium"
+              />
+              <input
+                type="text"
+                value={settings.hero_badge_3_subtitle || ""}
+                onChange={(e) =>
+                  setSettings({ ...settings, hero_badge_3_subtitle: e.target.value })
+                }
+                placeholder="Pillar 3 Subtitle (e.g. Complimentary on ₹2,999+)"
+                className="w-full px-3 py-1.5 text-[11px] rounded border border-slate-200 bg-slate-50 text-slate-600"
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -528,6 +680,399 @@ export default function StorefrontCMSPage() {
             />
             <p className="text-[11px] text-slate-400 mt-1">
               Controls which collection the "Featured Collection" banner links to on the homepage.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      {/* 5. Brand Occasions Showcase */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Compass className="w-4 h-4 text-gold-500" />
+            <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider">
+              5. Occasions & Curated Edits Showcase
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddOccasion}
+            className="px-3 py-1.5 bg-navy-950 hover:bg-navy-900 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Occasion</span>
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Curated visual cards that appear on the storefront homepage under the "Shop by Occasion" section.
+        </p>
+
+        {(!settings.occasions || settings.occasions.length === 0) ? (
+          <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+            <Compass className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-medium text-slate-600">No occasions configured</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Click "Add Occasion" to create custom curation tiles.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {settings.occasions.map((occ, idx) => (
+              <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 relative group">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Occasion #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveOccasion(idx)}
+                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                    title="Remove occasion"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Title</label>
+                    <input
+                      type="text"
+                      value={occ.title}
+                      onChange={(e) => handleUpdateOccasion(idx, { title: e.target.value })}
+                      placeholder="e.g. Royal Weddings"
+                      className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Subtitle</label>
+                    <input
+                      type="text"
+                      value={occ.subtitle}
+                      onChange={(e) => handleUpdateOccasion(idx, { subtitle: e.target.value })}
+                      placeholder="e.g. Bridal & Ceremonial"
+                      className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Target Link (href)</label>
+                  <input
+                    type="text"
+                    value={occ.href}
+                    onChange={(e) => handleUpdateOccasion(idx, { href: e.target.value })}
+                    placeholder="/shop?occasion=wedding"
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white font-mono"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Cover Image</label>
+                  <div className="flex items-center gap-2">
+                    <div className="w-12 h-12 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden flex-shrink-0">
+                      {occ.image ? (
+                        <img src={occ.image} alt={occ.title} className="w-full h-full object-cover" />
+                      ) : (
+                        <ImageIcon className="w-5 h-5 text-slate-400 m-auto mt-3.5" />
+                      )}
+                    </div>
+                    <input
+                      type="text"
+                      value={occ.image}
+                      onChange={(e) => handleUpdateOccasion(idx, { image: e.target.value })}
+                      placeholder="Image URL or upload..."
+                      className="flex-1 px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                    />
+                    <label className="px-3 py-1.5 bg-white border border-slate-300 rounded-lg text-xs font-medium text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center gap-1.5 shrink-0">
+                      {uploadingIndex?.section === "occasion" && uploadingIndex?.index === idx ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-gold-600" />
+                      ) : (
+                        <Upload className="w-3.5 h-3.5 text-gold-600" />
+                      )}
+                      <span>Upload</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleOccasionImageUpload(idx, file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 6. Community Gallery & Social Proof */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Camera className="w-4 h-4 text-gold-500" />
+            <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider">
+              6. Community Gallery / #SaveeWomen
+            </h3>
+          </div>
+          <div className="flex items-center gap-4">
+            <button
+              type="button"
+              onClick={() =>
+                setSettings({
+                  ...settings,
+                  community_gallery_active: !settings.community_gallery_active,
+                })
+              }
+              className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-md transition-colors ${
+                settings.community_gallery_active
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-slate-100 text-slate-500 border border-slate-200"
+              }`}
+            >
+              {settings.community_gallery_active ? (
+                <ToggleRight className="w-4 h-4 text-emerald-600" />
+              ) : (
+                <ToggleLeft className="w-4 h-4 text-slate-400" />
+              )}
+              <span>{settings.community_gallery_active ? "Section Visible" : "Section Hidden"}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleAddCommunityItem}
+              className="px-3 py-1.5 bg-navy-950 hover:bg-navy-900 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Post</span>
+            </button>
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Authentic styling photos featuring patrons draped in Savee couture. Shows up as the Instagram editorial gallery on the homepage.
+        </p>
+
+        {(!settings.community_gallery || settings.community_gallery.length === 0) ? (
+          <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+            <Camera className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-medium text-slate-600">No community posts configured</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Click "Add Post" to feature patrons and real clients.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {settings.community_gallery.map((item, idx) => (
+              <div key={idx} className="p-4 rounded-xl border border-slate-200 bg-slate-50/50 space-y-3 relative group">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider">
+                    Post #{idx + 1}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveCommunityItem(idx)}
+                    className="p-1 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                    title="Remove post"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <div className="w-14 h-14 rounded-lg bg-slate-200 border border-slate-300 overflow-hidden flex-shrink-0">
+                    {item.image ? (
+                      <img src={item.image} alt="Community" className="w-full h-full object-cover" />
+                    ) : (
+                      <Camera className="w-5 h-5 text-slate-400 m-auto mt-4" />
+                    )}
+                  </div>
+                  <div className="flex-1 space-y-1">
+                    <input
+                      type="text"
+                      value={item.image}
+                      onChange={(e) => handleUpdateCommunityItem(idx, { image: e.target.value })}
+                      placeholder="Image URL..."
+                      className="w-full px-2 py-1 text-xs rounded border border-slate-300 bg-white"
+                    />
+                    <label className="w-full py-1 bg-white border border-slate-300 rounded text-center text-[11px] font-medium text-slate-700 hover:bg-slate-50 cursor-pointer flex items-center justify-center gap-1">
+                      {uploadingIndex?.section === "community" && uploadingIndex?.index === idx ? (
+                        <Loader2 className="w-3 h-3 animate-spin text-gold-600" />
+                      ) : (
+                        <Upload className="w-3 h-3 text-gold-600" />
+                      )}
+                      <span>Upload Photo</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) handleCommunityImageUpload(idx, file);
+                        }}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Caption / Patron Handle</label>
+                  <input
+                    type="text"
+                    value={item.caption || ""}
+                    onChange={(e) => handleUpdateCommunityItem(idx, { caption: e.target.value })}
+                    placeholder="e.g. @ananya.s in Banarasi Katan"
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-1">Social Post Link</label>
+                  <input
+                    type="text"
+                    value={item.link || ""}
+                    onChange={(e) => handleUpdateCommunityItem(idx, { link: e.target.value })}
+                    placeholder="https://instagram.com/p/..."
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white font-mono text-[11px]"
+                  />
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 7. Store Coordinates & Support Channels */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Globe className="w-4 h-4 text-gold-500" />
+          <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider">
+            7. Brand Coordinates & Support Channels
+          </h3>
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Displayed dynamically across the storefront footer, contact page, order confirmations, and customer care drawers.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Support Email
+            </label>
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-slate-400" />
+              <input
+                type="email"
+                value={settings.support_email || ""}
+                onChange={(e) => setSettings({ ...settings, support_email: e.target.value })}
+                placeholder="concierge@savee.in"
+                className="flex-1 px-3 py-2 text-xs rounded border border-slate-300 bg-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Support Phone / Helpline
+            </label>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-slate-400" />
+              <input
+                type="text"
+                value={settings.support_phone || ""}
+                onChange={(e) => setSettings({ ...settings, support_phone: e.target.value })}
+                placeholder="+91 98765 43210"
+                className="flex-1 px-3 py-2 text-xs rounded border border-slate-300 bg-white"
+              />
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              WhatsApp Concierge
+            </label>
+            <div className="flex items-center gap-2">
+              <Phone className="w-4 h-4 text-emerald-500" />
+              <input
+                type="text"
+                value={settings.support_whatsapp || ""}
+                onChange={(e) => setSettings({ ...settings, support_whatsapp: e.target.value })}
+                placeholder="+91 98765 43210"
+                className="flex-1 px-3 py-2 text-xs rounded border border-slate-300 bg-white"
+              />
+            </div>
+          </div>
+
+          <div className="sm:col-span-2">
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Registered Atelier / Studio Address
+            </label>
+            <input
+              type="text"
+              value={settings.support_address || ""}
+              onChange={(e) => setSettings({ ...settings, support_address: e.target.value })}
+              placeholder="Savee Enterprises, Mumbai, India"
+              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white"
+            />
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Instagram URL
+            </label>
+            <input
+              type="url"
+              value={settings.social_instagram || ""}
+              onChange={(e) => setSettings({ ...settings, social_instagram: e.target.value })}
+              placeholder="https://instagram.com/savee"
+              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-mono text-[11px]"
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* 8. Delivery & Checkout Thresholds */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+          <Truck className="w-4 h-4 text-gold-500" />
+          <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider">
+            8. Delivery & Checkout Rules
+          </h3>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Free Shipping Order Threshold (₹)
+            </label>
+            <input
+              type="number"
+              value={settings.free_shipping_threshold ?? 2999}
+              onChange={(e) =>
+                setSettings({ ...settings, free_shipping_threshold: Number(e.target.value) })
+              }
+              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-mono"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Orders with cart value equal to or above this amount qualify for zero delivery fee.
+            </p>
+          </div>
+
+          <div>
+            <label className="block text-[11px] font-semibold text-slate-700 uppercase tracking-wider mb-1">
+              Standard Shipping Fee (₹)
+            </label>
+            <input
+              type="number"
+              value={settings.standard_shipping_fee ?? 199}
+              onChange={(e) =>
+                setSettings({ ...settings, standard_shipping_fee: Number(e.target.value) })
+              }
+              className="w-full px-3 py-2 text-xs rounded border border-slate-300 bg-white font-mono"
+            />
+            <p className="text-[11px] text-slate-400 mt-1">
+              Standard delivery fee added at checkout for carts below the threshold.
             </p>
           </div>
         </div>

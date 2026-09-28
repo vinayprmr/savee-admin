@@ -10,8 +10,9 @@ export default function LoginPage() {
   const router = useRouter();
   const { login, isAuthenticated, isLoading, error } = useAdminAuthStore();
 
-  const [email, setEmail] = useState("admin@savee.in");
-  const [password, setPassword] = useState("Savee@Admin2026");
+  const isDev = process.env.NODE_ENV !== "production";
+  const [email, setEmail] = useState(isDev ? "admin@savee.in" : "");
+  const [password, setPassword] = useState(isDev ? "Savee@Admin2026" : "");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -31,8 +32,10 @@ export default function LoginPage() {
   };
 
   const handleFillDemo = () => {
-    setEmail("admin@savee.in");
-    setPassword("Savee@Admin2026");
+    if (isDev) {
+      setEmail("admin@savee.in");
+      setPassword("Savee@Admin2026");
+    }
   };
 
   return (
@@ -88,14 +91,16 @@ export default function LoginPage() {
                 <label className="block text-xs font-semibold uppercase tracking-wider text-slate-700">
                   Password
                 </label>
-                <button
-                  type="button"
-                  onClick={handleFillDemo}
-                  className="text-xs text-gold-600 hover:text-gold-700 font-semibold inline-flex items-center gap-1.5 transition-colors"
-                >
-                  <KeyRound className="w-3.5 h-3.5 text-gold-500" />
-                  <span>Fill Credentials</span>
-                </button>
+                {isDev && (
+                  <button
+                    type="button"
+                    onClick={handleFillDemo}
+                    className="text-xs text-gold-600 hover:text-gold-700 font-semibold inline-flex items-center gap-1.5 transition-colors"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-gold-500" />
+                    <span>Fill Credentials</span>
+                  </button>
+                )}
               </div>
               <input
                 type="password"

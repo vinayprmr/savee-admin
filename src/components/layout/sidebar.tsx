@@ -148,7 +148,7 @@ export function Sidebar() {
 
         {/* Link to Consumer Store */}
         <a
-          href="http://localhost:3000"
+          href={process.env.NEXT_PUBLIC_STOREFRONT_URL || "http://localhost:3000"}
           target="_blank"
           rel="noreferrer"
           className="flex items-center justify-between px-2.5 py-1.5 rounded text-[11px] text-slate-300 hover:text-gold-400 hover:bg-navy-900/60 transition-all font-medium"

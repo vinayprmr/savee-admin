@@ -33,7 +33,9 @@ export async function adminFetch<T>(
   const token = getStoredToken();
 
   const headers = new Headers(options.headers || {});
-  headers.set("Content-Type", "application/json");
+  if (!(options.body instanceof FormData)) {
+    headers.set("Content-Type", "application/json");
+  }
 
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);

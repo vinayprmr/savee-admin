@@ -191,6 +191,26 @@ export interface PaginatedAdminCustomers {
   totalPages: number;
 }
 
+export interface OccasionCMSItem {
+  title: string;
+  subtitle: string;
+  image: string;
+  href: string;
+}
+
+export interface CommunityGalleryCMSItem {
+  image: string;
+  caption?: string;
+  link?: string;
+}
+
+export interface MediaUploadResult {
+  url: string;
+  filename: string;
+  mediaType: string;
+  size: number;
+}
+
 export interface StorefrontSettings {
   id: string;
   announcement_text: string;
@@ -205,12 +225,32 @@ export interface StorefrontSettings {
   hero_secondary_cta_link: string;
 
   hero_badge_1: string;
+  hero_badge_1_subtitle?: string;
   hero_badge_2: string;
+  hero_badge_2_subtitle?: string;
   hero_badge_3: string;
+  hero_badge_3_subtitle?: string;
+  hero_eyebrow?: string;
 
   manifesto_quote: string;
   trending_searches: string[];
   featured_collection_slug: string;
+
+  occasions?: OccasionCMSItem[];
+  community_gallery?: CommunityGalleryCMSItem[];
+  community_gallery_active?: boolean;
+
+  support_email?: string;
+  support_phone?: string;
+  support_whatsapp?: string;
+  support_address?: string;
+  social_instagram?: string;
+  social_facebook?: string;
+
+  free_shipping_threshold?: number;
+  standard_shipping_fee?: number;
+  default_placeholder_image?: string;
+
   updated_at?: string;
 }
 
@@ -227,12 +267,31 @@ export interface UpdateStorefrontSettingsPayload {
   hero_secondary_cta_link?: string;
 
   hero_badge_1?: string;
+  hero_badge_1_subtitle?: string;
   hero_badge_2?: string;
+  hero_badge_2_subtitle?: string;
   hero_badge_3?: string;
+  hero_badge_3_subtitle?: string;
+  hero_eyebrow?: string;
 
   manifesto_quote?: string;
   trending_searches?: string[];
   featured_collection_slug?: string;
+
+  occasions?: OccasionCMSItem[];
+  community_gallery?: CommunityGalleryCMSItem[];
+  community_gallery_active?: boolean;
+
+  support_email?: string;
+  support_phone?: string;
+  support_whatsapp?: string;
+  support_address?: string;
+  social_instagram?: string;
+  social_facebook?: string;
+
+  free_shipping_threshold?: number;
+  standard_shipping_fee?: number;
+  default_placeholder_image?: string;
 }
 
 export interface NewsletterSubscriberItem {

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   X,
   Sparkles,
@@ -18,6 +18,8 @@ import {
   ChevronRight,
   Film,
   Volume2,
+  Upload,
+  Loader2,
 } from "lucide-react";
 import {
   AdminCategoryItem,
@@ -74,6 +76,41 @@ export function EditGarmentDrawer({
   const [newImageUrl, setNewImageUrl] = useState("");
   const [newThumbnailUrl, setNewThumbnailUrl] = useState("");
   const [newHasAudio, setNewHasAudio] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    setIsUploadingMedia(true);
+    setError(null);
+
+    try {
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const res = await AdminService.uploadMedia(file);
+        const isVid = res.mediaType === "video";
+        setImages((prev) => [
+          ...prev,
+          {
+            url: res.url,
+            altText: title || file.name.replace(/\.[^/.]+$/, ""),
+            isPrimary: prev.length === 0,
+            mediaType: isVid ? "video" : "image",
+          },
+        ]);
+      }
+    } catch (err: any) {
+      console.error("Failed to upload media:", err);
+      setError(err?.message || "Failed to upload file. Please try again.");
+    } finally {
+      setIsUploadingMedia(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
 
   // Variants list
   const [variants, setVariants] = useState<CreateVariantPayload[]>([]);
@@ -603,33 +640,57 @@ export function EditGarmentDrawer({
                 </div>
 
                 {/* Input Fields */}
-                <div className="space-y-2">
-                  <div className="flex gap-2">
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
                     <input
-                      type="url"
-                      placeholder={
-                        mediaType === "video"
-                          ? "Paste direct video stream URL (.mp4, .webm)..."
-                          : "Paste direct high-res image URL (e.g. Unsplash, CDN)..."
-                      }
-                      value={newImageUrl}
-                      onChange={(e) => {
-                        const val = e.target.value;
-                        setNewImageUrl(val);
-                        if (/\.(mp4|webm|mov)(\?.*)?$/i.test(val)) {
-                          setMediaType("video");
-                        }
-                      }}
-                      className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm"
+                      multiple
+                      className="hidden"
+                      onChange={handleFileUpload}
                     />
                     <button
                       type="button"
-                      onClick={handleAddImage}
-                      className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1 shrink-0"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploadingMedia}
+                      className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 transition-colors flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
                     >
-                      <Plus className="w-3.5 h-3.5" />
-                      <span>Add {mediaType === "video" ? "Video" : "URL"}</span>
+                      {isUploadingMedia ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin text-gold-600" />
+                      ) : (
+                        <Upload className="w-3.5 h-3.5 text-gold-600" />
+                      )}
+                      <span>{isUploadingMedia ? "Uploading..." : "Upload from Device"}</span>
                     </button>
+
+                    <div className="flex-1 flex gap-2">
+                      <input
+                        type="url"
+                        placeholder={
+                          mediaType === "video"
+                            ? "Or paste video URL (.mp4, .webm)..."
+                            : "Or paste high-res image URL..."
+                        }
+                        value={newImageUrl}
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          setNewImageUrl(val);
+                          if (/\.(mp4|webm|mov)(\?.*)?$/i.test(val)) {
+                            setMediaType("video");
+                          }
+                        }}
+                        className="flex-1 px-3 py-2 text-xs rounded-lg border border-slate-300 focus:outline-none focus:ring-1 focus:ring-navy-900 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddImage}
+                        className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-900 text-white hover:bg-slate-800 transition-colors flex items-center gap-1 shrink-0"
+                      >
+                        <Plus className="w-3.5 h-3.5" />
+                        <span>Add</span>
+                      </button>
+                    </div>
                   </div>
 
                   {mediaType === "video" && (
@@ -657,7 +718,16 @@ export function EditGarmentDrawer({
 
                 {/* Thumbnails preview & sequence management */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {images.map((img, idx) => {
+                  {images.length === 0 ? (
+                    <div className="col-span-full py-6 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+                      <ImageIcon className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+                      <p className="text-xs font-medium text-slate-600">No media assets added yet</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        Upload photos or videos from your computer, or paste public URLs above.
+                      </p>
+                    </div>
+                  ) : (
+                    images.map((img, idx) => {
                     const isVid = img.mediaType === "video";
                     const coverSrc = isVid ? img.thumbnailUrl || img.url : img.url;
 
@@ -738,7 +808,8 @@ export function EditGarmentDrawer({
                         </div>
                       </div>
                     );
-                  })}
+                  })
+                )}
                 </div>
               </div>
 

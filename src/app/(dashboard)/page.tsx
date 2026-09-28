@@ -303,7 +303,7 @@ export default function DashboardOverviewPage() {
           <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between text-[11px] text-slate-500">
             <span>Customer Front End</span>
             <a
-              href="http://localhost:3000"
+              href={process.env.NEXT_PUBLIC_STOREFRONT_URL || "http://localhost:3000"}
               target="_blank"
               rel="noreferrer"
               className="text-gold-600 hover:text-gold-700 font-medium inline-flex items-center gap-1"
