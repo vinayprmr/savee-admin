@@ -37,7 +37,7 @@ const NAV_ITEMS = [
     label: "Garment Inventory",
     href: "/inventory",
     icon: Layers,
-    badge: "126 styles",
+    badge: null,
   },
   {
     label: "Promotions & Codes",

@@ -31,20 +31,9 @@ import { ManageCategoriesModal } from "../../../components/inventory/ManageCateg
 import { AddGarmentDrawer } from "../../../components/inventory/AddGarmentDrawer";
 import { EditGarmentDrawer } from "../../../components/inventory/EditGarmentDrawer";
 
-const FALLBACK_CATEGORIES = [
-  { id: "cat-sarees", name: "Sarees", slug: "sarees", itemCount: 28, displayOrder: 1, isFeatured: true, isActive: true, subcategories: [] },
-  { id: "cat-lehengas", name: "Lehengas", slug: "lehengas", itemCount: 20, displayOrder: 2, isFeatured: true, isActive: true, subcategories: [] },
-  { id: "cat-kurtas-sets", name: "Kurtas & Sets", slug: "kurtas-sets", itemCount: 18, displayOrder: 3, isFeatured: true, isActive: true, subcategories: [] },
-  { id: "cat-anarkalis", name: "Anarkalis", slug: "anarkalis", itemCount: 14, displayOrder: 4, isFeatured: false, isActive: true, subcategories: [] },
-  { id: "cat-gowns", name: "Gowns", slug: "gowns", itemCount: 12, displayOrder: 5, isFeatured: false, isActive: true, subcategories: [] },
-  { id: "cat-coord-sets", name: "Co-ord Sets", slug: "coord-sets", itemCount: 12, displayOrder: 6, isFeatured: false, isActive: true, subcategories: [] },
-  { id: "cat-dresses", name: "Dresses", slug: "dresses", itemCount: 12, displayOrder: 7, isFeatured: false, isActive: true, subcategories: [] },
-  { id: "cat-jewelry", name: "Jewelry", slug: "jewelry", itemCount: 10, displayOrder: 8, isFeatured: false, isActive: true, subcategories: [] },
-];
-
 export default function InventoryPage() {
   const [products, setProducts] = useState<AdminProductItem[]>([]);
-  const [categories, setCategories] = useState<AdminCategoryItem[]>(FALLBACK_CATEGORIES);
+  const [categories, setCategories] = useState<AdminCategoryItem[]>([]);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isAddGarmentOpen, setIsAddGarmentOpen] = useState(false);
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
@@ -70,11 +59,10 @@ export default function InventoryPage() {
   const fetchCategories = useCallback(async () => {
     try {
       const cats = await AdminService.listCategories();
-      if (cats && cats.length > 0) {
-        setCategories(cats);
-      }
+      setCategories(cats || []);
     } catch (err) {
-      console.warn("Could not load dynamic categories, using cached presets", err);
+      console.warn("Could not load dynamic categories:", err);
+      setCategories([]);
     }
   }, []);
 

@@ -99,7 +99,7 @@ export default function DashboardOverviewPage() {
             Welcome to the Savee Command Center
           </h2>
           <p className="text-xs text-slate-300 mt-1 max-w-xl">
-            Real-time fulfillment metrics, luxury stock inventory across 126 catalog garments, and synchronized Delhivery logistics.
+            Real-time fulfillment metrics, luxury catalog inventory, and synchronized Delhivery logistics.
           </p>
         </div>
 
