@@ -166,30 +166,6 @@ export default function StorefrontCMSPage() {
     setSettings({ ...settings, nav_items: current });
   };
 
-  // Reset to Skeleton Handler
-  const [resetting, setResetting] = useState(false);
-  const handleResetSkeleton = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to reset all storefront settings to a clean blank canvas? All template text, headlines, and starter occasions will be cleared."
-      )
-    ) {
-      return;
-    }
-    try {
-      setResetting(true);
-      const clean = await AdminService.resetStorefrontSettings();
-      setSettings(clean);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-      alert("Storefront settings have been reset to a 100% clean skeleton!");
-    } catch (err: any) {
-      alert(err.message || "Failed to reset storefront settings");
-    } finally {
-      setResetting(false);
-    }
-  };
-
   const handleOccasionImageUpload = async (index: number, file: File) => {
     if (!settings) return;
     try {
@@ -321,18 +297,8 @@ export default function StorefrontCMSPage() {
           </button>
           <button
             type="button"
-            onClick={handleResetSkeleton}
-            disabled={resetting || saving}
-            className="px-3.5 py-2.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-700 hover:bg-rose-50 transition-colors flex items-center gap-1.5"
-            title="Wipe all template content and reset to empty skeleton"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>{resetting ? "Resetting..." : "Reset to Blank Canvas"}</span>
-          </button>
-          <button
-            type="button"
             onClick={handleSave}
-            disabled={saving || resetting}
+            disabled={saving}
             className={`px-5 py-2.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-2 ${
               saved
                 ? "bg-emerald-600 text-white"
