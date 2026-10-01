@@ -1087,7 +1087,7 @@ export default function StorefrontCMSPage() {
                 type="email"
                 value={settings.support_email || ""}
                 onChange={(e) => setSettings({ ...settings, support_email: e.target.value })}
-                placeholder="concierge@savee.in"
+                placeholder="care@saveestore.com"
                 className="flex-1 px-3 py-2 text-xs rounded border border-slate-300 bg-white"
               />
             </div>

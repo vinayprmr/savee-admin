@@ -11,7 +11,7 @@ export default function LoginPage() {
   const { login, isAuthenticated, isLoading, error } = useAdminAuthStore();
 
   const isDev = process.env.NODE_ENV !== "production";
-  const [email, setEmail] = useState(isDev ? "admin@savee.in" : "");
+  const [email, setEmail] = useState(isDev ? "admin@saveestore.com" : "");
   const [password, setPassword] = useState(isDev ? "Savee@Admin2026" : "");
   const [submitting, setSubmitting] = useState(false);
 
@@ -33,7 +33,7 @@ export default function LoginPage() {
 
   const handleFillDemo = () => {
     if (isDev) {
-      setEmail("admin@savee.in");
+      setEmail("admin@saveestore.com");
       setPassword("Savee@Admin2026");
     }
   };
@@ -81,7 +81,7 @@ export default function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="admin@savee.in"
+                placeholder="admin@saveestore.com"
                 className="w-full px-3.5 py-2.5 rounded-lg border border-slate-300 text-sm text-slate-900 bg-slate-50/50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-navy-900 focus:border-navy-900 transition-all"
               />
             </div>

@@ -168,7 +168,7 @@ export function Sidebar() {
                 {admin?.name || "Operations Staff"}
               </div>
               <div className="text-[10px] text-slate-400 truncate font-mono">
-                {admin?.email || "admin@savee.in"}
+                {admin?.email || "admin@saveestore.com"}
               </div>
             </div>
           </div>
