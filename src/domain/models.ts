@@ -254,6 +254,7 @@ export interface StorefrontSettings {
   trending_searches: string[];
   featured_collection_slug: string;
 
+  nav_items?: NavItemCMSItem[];
   occasions?: OccasionCMSItem[];
   community_gallery?: CommunityGalleryCMSItem[];
   community_gallery_active?: boolean;
@@ -270,6 +271,14 @@ export interface StorefrontSettings {
   default_placeholder_image?: string;
 
   updated_at?: string;
+}
+
+export interface NavItemCMSItem {
+  id?: string;
+  label: string;
+  href: string;
+  badge?: string;
+  highlight?: boolean;
 }
 
 export interface UpdateStorefrontSettingsPayload {
@@ -296,6 +305,7 @@ export interface UpdateStorefrontSettingsPayload {
   trending_searches?: string[];
   featured_collection_slug?: string;
 
+  nav_items?: NavItemCMSItem[];
   occasions?: OccasionCMSItem[];
   community_gallery?: CommunityGalleryCMSItem[];
   community_gallery_active?: boolean;

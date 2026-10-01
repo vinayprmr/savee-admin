@@ -30,6 +30,7 @@ import {
   StorefrontSettings,
   OccasionCMSItem,
   CommunityGalleryCMSItem,
+  NavItemCMSItem,
 } from "../../../domain/models";
 import { AdminService } from "../../../services/admin.service";
 
@@ -131,6 +132,62 @@ export default function StorefrontCMSPage() {
     const current = [...(settings.occasions || [])];
     current.splice(index, 1);
     setSettings({ ...settings, occasions: current });
+  };
+
+  // Navigation Links Handlers
+  const handleAddNavItem = () => {
+    if (!settings) return;
+    const current = settings.nav_items || [];
+    setSettings({
+      ...settings,
+      nav_items: [
+        ...current,
+        {
+          label: "New Link",
+          href: "/shop",
+          badge: "",
+          highlight: false,
+        },
+      ],
+    });
+  };
+
+  const handleUpdateNavItem = (index: number, patch: Partial<NavItemCMSItem>) => {
+    if (!settings) return;
+    const current = [...(settings.nav_items || [])];
+    current[index] = { ...current[index], ...patch };
+    setSettings({ ...settings, nav_items: current });
+  };
+
+  const handleRemoveNavItem = (index: number) => {
+    if (!settings) return;
+    const current = [...(settings.nav_items || [])];
+    current.splice(index, 1);
+    setSettings({ ...settings, nav_items: current });
+  };
+
+  // Reset to Skeleton Handler
+  const [resetting, setResetting] = useState(false);
+  const handleResetSkeleton = async () => {
+    if (
+      !window.confirm(
+        "Are you sure you want to reset all storefront settings to a clean blank canvas? All template text, headlines, and starter occasions will be cleared."
+      )
+    ) {
+      return;
+    }
+    try {
+      setResetting(true);
+      const clean = await AdminService.resetStorefrontSettings();
+      setSettings(clean);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+      alert("Storefront settings have been reset to a 100% clean skeleton!");
+    } catch (err: any) {
+      alert(err.message || "Failed to reset storefront settings");
+    } finally {
+      setResetting(false);
+    }
   };
 
   const handleOccasionImageUpload = async (index: number, file: File) => {
@@ -264,8 +321,18 @@ export default function StorefrontCMSPage() {
           </button>
           <button
             type="button"
+            onClick={handleResetSkeleton}
+            disabled={resetting || saving}
+            className="px-3.5 py-2.5 rounded-lg text-xs font-semibold border border-rose-200 text-rose-700 hover:bg-rose-50 transition-colors flex items-center gap-1.5"
+            title="Wipe all template content and reset to empty skeleton"
+          >
+            <Trash2 className="w-3.5 h-3.5" />
+            <span>{resetting ? "Resetting..." : "Reset to Blank Canvas"}</span>
+          </button>
+          <button
+            type="button"
             onClick={handleSave}
-            disabled={saving}
+            disabled={saving || resetting}
             className={`px-5 py-2.5 rounded-lg text-xs font-semibold shadow-sm transition-all flex items-center gap-2 ${
               saved
                 ? "bg-emerald-600 text-white"
@@ -405,7 +472,95 @@ export default function StorefrontCMSPage() {
         </div>
       </div>
 
-      {/* 2. Hero Billboard (Homepage Header) */}
+      {/* 2. Custom Header Navigation Links (CMS Managed) */}
+      <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <Globe className="w-4 h-4 text-gold-500" />
+            <h3 className="text-sm font-semibold text-navy-950 uppercase tracking-wider">
+              2. Custom Header Navigation Links
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={handleAddNavItem}
+            className="px-3 py-1.5 bg-navy-950 hover:bg-navy-900 text-white text-xs font-semibold rounded-lg transition-colors flex items-center gap-1.5"
+          >
+            <Plus className="w-3.5 h-3.5" />
+            <span>Add Nav Link</span>
+          </button>
+        </div>
+
+        <p className="text-xs text-slate-500">
+          Configure custom links in your top storefront navigation bar (e.g. &ldquo;New In&rdquo;, &ldquo;Collections&rdquo;, &ldquo;Sale&rdquo;). Garment categories automatically display alongside these.
+        </p>
+
+        {(!settings.nav_items || settings.nav_items.length === 0) ? (
+          <div className="py-8 text-center border-2 border-dashed border-slate-200 rounded-xl bg-slate-50/50">
+            <Globe className="w-8 h-8 text-slate-300 mx-auto mb-2" />
+            <p className="text-xs font-medium text-slate-600">No custom navigation links configured</p>
+            <p className="text-[11px] text-slate-400 mt-0.5">Click &ldquo;Add Nav Link&rdquo; to add custom links, or rely solely on dynamic garment categories.</p>
+          </div>
+        ) : (
+          <div className="space-y-3">
+            {settings.nav_items.map((item, idx) => (
+              <div key={idx} className="p-3 rounded-lg border border-slate-200 bg-slate-50/60 flex flex-col sm:flex-row items-center gap-3">
+                <div className="flex-1 w-full sm:w-auto">
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-0.5">Link Label</label>
+                  <input
+                    type="text"
+                    value={item.label}
+                    onChange={(e) => handleUpdateNavItem(idx, { label: e.target.value })}
+                    placeholder="e.g. New Arrivals"
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                  />
+                </div>
+                <div className="flex-1 w-full sm:w-auto">
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-0.5">Target URL</label>
+                  <input
+                    type="text"
+                    value={item.href}
+                    onChange={(e) => handleUpdateNavItem(idx, { href: e.target.value })}
+                    placeholder="e.g. /shop?isNewArrival=true or /sale"
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white font-mono"
+                  />
+                </div>
+                <div className="w-full sm:w-28">
+                  <label className="block text-[10px] font-semibold uppercase text-slate-600 mb-0.5">Badge (Optional)</label>
+                  <input
+                    type="text"
+                    value={item.badge || ""}
+                    onChange={(e) => handleUpdateNavItem(idx, { badge: e.target.value })}
+                    placeholder="e.g. Hot"
+                    className="w-full px-2.5 py-1.5 text-xs rounded border border-slate-300 bg-white"
+                  />
+                </div>
+                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-start gap-4 pt-4 sm:pt-3">
+                  <label className="flex items-center gap-1.5 text-xs text-slate-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={item.highlight || false}
+                      onChange={(e) => handleUpdateNavItem(idx, { highlight: e.target.checked })}
+                      className="rounded border-slate-300 text-navy-950 focus:ring-navy-900"
+                    />
+                    <span className="text-[11px]">Highlight</span>
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveNavItem(idx)}
+                    className="p-1.5 text-slate-400 hover:text-rose-600 rounded transition-colors"
+                    title="Remove link"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 3. Hero Showcase Billboard */}
       <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-xs space-y-4">
         <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
           <Sparkles className="w-4 h-4 text-gold-500" />

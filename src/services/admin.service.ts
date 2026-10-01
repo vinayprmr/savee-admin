@@ -239,6 +239,12 @@ export const AdminService = {
     });
   },
 
+  async resetStorefrontSettings(): Promise<StorefrontSettings> {
+    return adminFetch<StorefrontSettings>("/admin/storefront/settings/reset", {
+      method: "POST",
+    });
+  },
+
   // Newsletter Subscribers
   async listSubscribers(params: {
     page?: number;
