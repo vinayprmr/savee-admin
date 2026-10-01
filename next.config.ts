@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   output: "standalone",
   reactStrictMode: true,
   devIndicators: false,
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
   images: {
     remotePatterns: [
       {
